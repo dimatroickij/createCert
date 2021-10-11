@@ -15,11 +15,8 @@ package ru.voskhod;
 
 
 import org.apache.xml.security.Init;
-import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
-import org.apache.xml.security.transforms.InvalidTransformException;
-import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.Transforms;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.*;
