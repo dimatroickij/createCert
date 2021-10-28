@@ -50,10 +50,8 @@ import java.util.stream.Stream;
 public class Signer {
     public Signer() {
         JCPXMLDSigInit.init();  //без него XAdES не создаётся
-        System.setProperty("ru.CryptoPro.reprov.enableCRLDP", "true");
         System.setProperty("com.sun.security.enableCRLDP", "true");
         System.setProperty("com.ibm.security.enableCRLDP", "true");
-        System.setProperty("ru.cryptopro.notThrowIfChainIsInvalid", "true");
         System.setProperty("ocsp.enable", "true");
         // Security.setProperty("ocsp.responderURL", "http://testguc.voskhod.local/OCSP/ocsp.srf");
         System.setProperty("org.apache.xml.security.resource.config", "resource/jcp.xml");
@@ -90,7 +88,6 @@ public class Signer {
 
         // Создаем CAdES подпись.
         CAdESSignature cadesSignature = new CAdESSignature(detached);
-
 
 
         cadesSignature.addSigner(JCP.PROVIDER_NAME, null, null, privateKey, chain, CAdESType.CAdES_BES, null, false);
@@ -193,19 +190,24 @@ public class Signer {
 
     public byte[] XAdES_BES(String alias, String password, byte[] data, String ref_acct) throws Exception {
 
+        // декодирование документа
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         dbFactory.setNamespaceAware(true);
-        Document document = dbFactory.newDocumentBuilder().parse(new ByteArrayInputStream(data));
+        Document document = dbFactory.newDocumentBuilder().parse(
+                new ByteArrayInputStream(data));
 
-        final XPathFactory factory = XPathFactory.newInstance();
-        final XPath xpath = factory.newXPath();
-        final XPathExpression expr = xpath.compile(String.format("//*[@Id='%s']", ref_acct));
-        final NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+
+        XPathExpression expr = xpath.compile(String.format("//*[@Id='%s']", ref_acct));
+        NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+
         if (nodes.getLength() == 0) {
             throw new Exception("Not found ID=" + ref_acct);
-        } // if
-        final Node node = nodes.item(0);
-        final String referenceURI = "#" + ref_acct;
+        }
+
+        Node node = nodes.item(0);
+        String referenceURI = "#" + ref_acct;
 
 
         // Подписываемая ссылка.
@@ -222,46 +224,54 @@ public class Signer {
         XAdESSignature xAdESSignature = new XAdESSignature();
         xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, privateKey, chain, XAdESType.XAdES_BES, null);
 
-        //ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
-        FileOutputStream fileOutputStream = new FileOutputStream("signed.xml");
-        xAdESSignature.open(fileOutputStream);
+        ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
+
+        xAdESSignature.open(signatureStream);
         xAdESSignature.update((Element) node, dataObjects);
         xAdESSignature.close();
-//        xAdESSignature.open(signatureStream);
-//        xAdESSignature.update((Element) node, dataObjects);
-//        xAdESSignature.close();
-//        signatureStream.toByteArray();
-//        return signatureStream.toByteArray();
-        return data;
+        return signatureStream.toByteArray();
     }
 
-    public byte[] XAdES_T(String alias, String password, byte[] data, String ref_acct) throws Exception {
-        final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    public byte[] XAdES_T(String alias, String password, byte[] data, String tsp, String ref_acct) throws Exception {
+        // декодирование документа
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         dbFactory.setNamespaceAware(true);
-        final Document sourceDocument = dbFactory.newDocumentBuilder().parse(new ByteArrayInputStream(data));
+        Document document = dbFactory.newDocumentBuilder().parse(
+                new ByteArrayInputStream(data));
 
-        final XPathFactory factory = XPathFactory.newInstance();
-        final XPath xpath = factory.newXPath();
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
 
-        final XPathExpression expr = xpath.compile(String.format("//*[@Id='%s']", ref_acct));
-        final NodeList nodes = (NodeList) expr.evaluate(sourceDocument, XPathConstants.NODESET);
+        XPathExpression expr = xpath.compile(String.format("//*[@Id='%s']", ref_acct));
+        NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
 
         if (nodes.getLength() == 0) {
-            throw new Exception("Can't find node with id=" + ref_acct);
-        } // if
+            throw new Exception("Not found ID=" + ref_acct);
+        }
 
-        final Node nodeToSign = nodes.item(0);
-        final String referenceURI = "#" + ref_acct;
+        Node node = nodes.item(0);
+        String referenceURI = "#" + ref_acct;
 
-        final KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
+        // Подписываемая ссылка.
+        DataObjects dataObjects = new DataObjects(Collections.singletonList(referenceURI));
+        dataObjects.addTransform(new EnvelopedTransform());
+
+        final KeyStore hdImageStore = KeyStore.getInstance(CMStools.STORE_TYPE);
         hdImageStore.load(null, null);
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
+
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
         List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
 
+        XAdESSignature xAdESSignature = new XAdESSignature();
+//        xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, privateKey, chain, XAdESType.XAdES_T, tsp, null);
 
+        ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
 
-        return data;
+        xAdESSignature.open(signatureStream);
+        xAdESSignature.update((Element) node, dataObjects);
+        xAdESSignature.close();
+        return signatureStream.toByteArray();
     }
 
     public byte[] WS_Security(String alias, String password, byte[] data) throws Exception {
@@ -343,7 +353,7 @@ public class Signer {
         MessageDigest digest =
                 (GostDigest) MessageDigest.getInstance(JCP.GOST_DIGEST_NAME, JCP.PROVIDER_NAME);
         digest.update(buffer);
-        System.out.println(new Asn1OctetString(String.valueOf(digest)));
+        //System.out.println(new Asn1OctetString(String.valueOf(digest)));
         return asnBuf.getMsgCopy();
     }
 }

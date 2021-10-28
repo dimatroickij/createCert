@@ -1,8 +1,7 @@
 package ru.voskhod;
 
-import ru.CryptoPro.JCP.JCP;
-
 import java.security.cert.Certificate;
+import ru.CryptoPro.JCP.JCP;
 
 public class CertAlgGeneration {
 
