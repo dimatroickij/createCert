@@ -84,13 +84,15 @@ public class Signer {
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
 
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
-        List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
 
         // Создаем CAdES подпись.
         CAdESSignature cadesSignature = new CAdESSignature(detached);
 
 
-        cadesSignature.addSigner(JCP.PROVIDER_NAME, null, null, privateKey, chain, CAdESType.CAdES_BES, null, false);
+        cadesSignature.addSigner(JCP.PROVIDER_NAME, null, null, privateKey, chain, CAdESType.CAdES_BES,
+                null, false);
 
         // Добавление цепочки сертификатов в созданную подпись
         List<X509CertificateHolder> chainHolder = new ArrayList<>();
@@ -121,7 +123,8 @@ public class Signer {
         X509Certificate cert = (X509Certificate) hdImageStore.getCertificate(alias);
 
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
-        List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
 
         // Создаем CAdES подпись.
         CAdESSignature cadesSignature = new CAdESSignature(detached);
@@ -147,13 +150,15 @@ public class Signer {
     }
 
     // Подумать про отсоединённую подпись
-    public byte[] CAdES_X_LONG_TYPE_1(String alias, String password, byte[] data, String tsp, boolean detached) throws Exception {
+    public byte[] CAdES_X_LONG_TYPE_1(String alias, String password, byte[] data, String tsp, boolean detached)
+            throws Exception {
         final KeyStore hdImageStore = KeyStore.getInstance(CMStools.STORE_TYPE);
         hdImageStore.load(null, null);
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
 
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
-        List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
 
         // Создаем CAdES-X Long Type 1 подпись.
         CAdESSignature cadesSignature = new CAdESSignature(detached);
@@ -179,14 +184,14 @@ public class Signer {
         return signatureStream.toByteArray();
     }
 
-    public byte[] xmlDsig(String alias, String password, int fileSizeBytes) throws Exception {
-        byte[] data = new byte[fileSizeBytes];
-        Random random = new Random();
-        random.nextBytes(data);
-        String templateFile = "src\\main\\resources\\message_unsigned_template.xml";
-        String documentContext = new String(Files.readAllBytes(Paths.get(templateFile)), StandardCharsets.UTF_8);
-        return XAdES_BES(alias, password, documentContext.replace("{data}", Base64.toBase64String(data)).getBytes(), "c3163513");
-    }
+//    public byte[] xmlDsig(String alias, String password, int fileSizeBytes) throws Exception {
+//        byte[] data = new byte[fileSizeBytes];
+//        Random random = new Random();
+//        random.nextBytes(data);
+//        String templateFile = "src\\main\\resources\\message_unsigned_template.xml";
+//        String documentContext = new String(Files.readAllBytes(Paths.get(templateFile)), StandardCharsets.UTF_8);
+//        return XAdES_BES(alias, password, documentContext.replace("{data}", Base64.toBase64String(data)).getBytes(), "c3163513");
+//    }
 
     public byte[] XAdES_BES(String alias, String password, byte[] data, String ref_acct) throws Exception {
 
@@ -219,7 +224,8 @@ public class Signer {
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
 
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
-        List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
 
         XAdESSignature xAdESSignature = new XAdESSignature();
         xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, privateKey, chain, XAdESType.XAdES_BES, null);
@@ -261,10 +267,57 @@ public class Signer {
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
 
         Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
-        List<X509Certificate> chain = Stream.of(chainArray).map(it -> (X509Certificate) it).collect(Collectors.toList());
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
 
         XAdESSignature xAdESSignature = new XAdESSignature();
-//        xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, privateKey, chain, XAdESType.XAdES_T, tsp, null);
+        xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, null, null, privateKey, chain, false,
+                XAdESType.XAdES_X_Long_Type_1, tsp, null);
+
+        ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
+
+        xAdESSignature.open(signatureStream);
+        xAdESSignature.update((Element) node, dataObjects);
+        xAdESSignature.close();
+        return signatureStream.toByteArray();
+    }
+
+    public byte[] XAdES_X_LONG_TYPE_1(String alias, String password, byte[] data, String tsp, String ref_acct)
+            throws Exception {
+        // декодирование документа
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        dbFactory.setNamespaceAware(true);
+        Document document = dbFactory.newDocumentBuilder().parse(
+                new ByteArrayInputStream(data));
+
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+
+        XPathExpression expr = xpath.compile(String.format("//*[@Id='%s']", ref_acct));
+        NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+
+        if (nodes.getLength() == 0) {
+            throw new Exception("Not found ID=" + ref_acct);
+        }
+
+        Node node = nodes.item(0);
+        String referenceURI = "#" + ref_acct;
+
+        // Подписываемая ссылка.
+        DataObjects dataObjects = new DataObjects(Collections.singletonList(referenceURI));
+        dataObjects.addTransform(new EnvelopedTransform());
+
+        final KeyStore hdImageStore = KeyStore.getInstance(CMStools.STORE_TYPE);
+        hdImageStore.load(null, null);
+        PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
+
+        Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
+        List<X509Certificate> chain = Stream.of(chainArray).map(it ->
+                (X509Certificate) it).collect(Collectors.toList());
+
+        XAdESSignature xAdESSignature = new XAdESSignature();
+        xAdESSignature.addSigner(JCP.PROVIDER_NAME, null, null, null, privateKey, chain, false,
+                XAdESType.XAdES_X_Long_Type_1, tsp, null);
 
         ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
 
@@ -278,13 +331,11 @@ public class Signer {
         return data;
     }
 
-    public static byte[] createCMSEx(byte[] buffer, byte[] sign,
-                                     Certificate cert, boolean detached, String digestOid,
+    public static byte[] createCMSEx(byte[] buffer, byte[] sign, Certificate cert, boolean detached, String digestOid,
                                      String signOid, String signName) throws Exception {
 
         ContentInfo all = new ContentInfo();
-        all.contentType = new Asn1ObjectIdentifier(
-                new OID(CMStools.STR_CMS_OID_SIGNED).value);
+        all.contentType = new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_SIGNED).value);
 
         final SignedData cms = new SignedData();
         all.content = cms;
@@ -292,22 +343,19 @@ public class Signer {
 
         // digest
         cms.digestAlgorithms = new DigestAlgorithmIdentifiers(1);
-        final DigestAlgorithmIdentifier a = new DigestAlgorithmIdentifier(
-                new OID(digestOid).value);
+        final DigestAlgorithmIdentifier a = new DigestAlgorithmIdentifier(new OID(digestOid).value);
 
         a.parameters = new Asn1Null();
         cms.digestAlgorithms.elements[0] = a;
 
         if (detached) {
             cms.encapContentInfo = new EncapsulatedContentInfo(
-                    new Asn1ObjectIdentifier(
-                            new OID(CMStools.STR_CMS_OID_DATA).value), null);
+                    new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_DATA).value), null);
         } // if
         else {
-            cms.encapContentInfo =
-                    new EncapsulatedContentInfo(new Asn1ObjectIdentifier(
-                            new OID(CMStools.STR_CMS_OID_DATA).value),
-                            new Asn1OctetString(buffer));
+            cms.encapContentInfo = new EncapsulatedContentInfo(new Asn1ObjectIdentifier(
+                    new OID(CMStools.STR_CMS_OID_DATA).value),
+                    new Asn1OctetString(buffer));
         } // else
 
         // certificate
@@ -328,20 +376,15 @@ public class Signer {
         cms.signerInfos.elements[0].version = new CMSVersion(1);
         cms.signerInfos.elements[0].sid = new SignerIdentifier();
 
-        final byte[] encodedName = ((X509Certificate) cert)
-                .getIssuerX500Principal().getEncoded();
+        final byte[] encodedName = ((X509Certificate) cert).getIssuerX500Principal().getEncoded();
         final Asn1BerDecodeBuffer nameBuf = new Asn1BerDecodeBuffer(encodedName);
         final Name name = new Name();
         name.decode(nameBuf);
-        final CertificateSerialNumber num = new CertificateSerialNumber(
-                ((X509Certificate) cert).getSerialNumber());
-        cms.signerInfos.elements[0].sid.set_issuerAndSerialNumber(
-                new IssuerAndSerialNumber(name, num));
-        cms.signerInfos.elements[0].digestAlgorithm =
-                new DigestAlgorithmIdentifier(new OID(digestOid).value);
+        final CertificateSerialNumber num = new CertificateSerialNumber(((X509Certificate) cert).getSerialNumber());
+        cms.signerInfos.elements[0].sid.set_issuerAndSerialNumber(new IssuerAndSerialNumber(name, num));
+        cms.signerInfos.elements[0].digestAlgorithm = new DigestAlgorithmIdentifier(new OID(digestOid).value);
         cms.signerInfos.elements[0].digestAlgorithm.parameters = new Asn1Null();
-        cms.signerInfos.elements[0].signatureAlgorithm =
-                new SignatureAlgorithmIdentifier(new OID(signOid).value);
+        cms.signerInfos.elements[0].signatureAlgorithm = new SignatureAlgorithmIdentifier(new OID(signOid).value);
         cms.signerInfos.elements[0].signatureAlgorithm.parameters = new Asn1Null();
         cms.signerInfos.elements[0].signature = new SignatureValue(sign);
 
