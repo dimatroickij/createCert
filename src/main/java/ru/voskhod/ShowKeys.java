@@ -9,15 +9,13 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Scanner;
 
 // Список подписей:
 // CMS (att.)
@@ -28,8 +26,8 @@ import java.util.List;
 // + CAdES-X-Long-Type 1
 // XML-DSig
 // + XAdES-BES
-// + XAdES-T
-// + XAdES-X-Long-Type 1
+// XAdES-T
+// XAdES-X-Long-Type 1
 // WS_Security
 // PAdES (штамп)
 // PAdES (без штампа)
@@ -46,8 +44,8 @@ public class ShowKeys {
         hdImageStore.load(null, null);
 
         Enumeration<String> enumeration = hdImageStore.aliases();
-        String rowFormat = "%50s%20s%45s%45s%30s%30s\n";
-        System.out.printf(rowFormat, "alias", "SigAlg", "serial", "Thumbprint", "NotAfter", "NotBefore");
+        String rowFormat = "%20s%50s%20s%45s%45s%30s%30s\n";
+        System.out.printf(rowFormat, "Common Name", "Alias", "Algorithm", "Serial", "Thumbprint", "NotBefore", "NotAfter");
         List<String> listCert = new ArrayList<>();
 
         while (enumeration.hasMoreElements()) {
@@ -55,10 +53,11 @@ public class ShowKeys {
             try {
                 X509Certificate certificate = (X509Certificate) hdImageStore.getCertificate(s);
                 BigInteger serialNumber = certificate.getSerialNumber();
-                System.out.printf(rowFormat, s, certificate.getPublicKey().getAlgorithm(),
+                String CN = certificate.getSubjectDN().toString().split(",")[0];
+                System.out.printf(rowFormat, CN, s, certificate.getPublicKey().getAlgorithm(),
                         serialNumber.toString(16), getThumbprint(certificate),
-                        certificate.getNotAfter().toString(),
-                        certificate.getNotBefore().toString());
+                        certificate.getNotBefore().toString(),
+                        certificate.getNotAfter().toString());
                 listCert.add(s);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -66,8 +65,9 @@ public class ShowKeys {
         }
         //System.out.println("Выберите нужный сертификат");
         //Scanner in = new Scanner(System.in);
-        int number = 0;//in.nextInt();
-        String password = "123456";
+        int number = 0;
+        //int number = in.nextInt();
+        String password = "12345678";
         String path = "src/main/resources/";
         Signer signer = new Signer();
         List<String> certChain = new ArrayList<>();
@@ -76,10 +76,10 @@ public class ShowKeys {
         byte[] file = Files.readAllBytes(Paths.get(path + "file.txt"));
         byte[] fileXML = Files.readAllBytes(Paths.get(path + "file.xml"));
 
-//        // Не работает !!!
-//        try (FileOutputStream fos = new FileOutputStream(path + "/output/CMS (att.).sig")) {
-//            fos.write(signer.CMS(listCert.get(number), password, file, false));
-//        }
+        // Не работает !!!
+        try (FileOutputStream fos = new FileOutputStream(path + "/output/CMS (att.).sig")) {
+            fos.write(signer.CMS(listCert.get(number), password, file, false));
+        }
 
         // Не работает !!!
 //        try (FileOutputStream fos = new FileOutputStream(path + "CMS (det.).sig")) {
@@ -92,41 +92,36 @@ public class ShowKeys {
 //            hash.write(Hasher.getHash2012(file));
 //        }
 
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-BES.sig")) {
-            fos.write(signer.CAdES_BES(listCert.get(number), password, file, false));
-        }
-
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-T.sig")) {
-            fos.write(signer.CAdES_T(listCert.get(number), password, file, "http://testca2012.cryptopro.ru/tsp/tsp.srf", false));
-        }
-
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-X Long Type 1.sig")) {
-            fos.write(signer.CAdES_X_LONG_TYPE_1(listCert.get(number), password, file, "http://testca2012.cryptopro.ru/tsp/tsp.srf", false));
-        }
-
-        // XML-DSig
-
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/XAdES-BES.xml")) {
-            fos.write(signer.XAdES_BES(listCert.get(number), password, fileXML, "acct"));
-        }
-
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/XAdES-T.xml")) {
-            fos.write(signer.XAdES_T(listCert.get(number), password, fileXML, "http://testca2012.cryptopro.ru/tsp/tsp.srf", "acct"));
-        }
-
-        // Работает
-        try (FileOutputStream fos = new FileOutputStream(path + "/output/XAdES-X Long Type 1.xml")) {
-            fos.write(signer.XAdES_T(listCert.get(number), password, fileXML, "http://testca2012.cryptopro.ru/tsp/tsp.srf", "acct"));
-        }
-
-        // WS-Security
-
-        // PAdES
+//        // Работает
+//        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-BES.sig")) {
+//            fos.write(signer.CAdES_BES(listCert.get(number), password, file, false));
+//        }
+//
+//        // Работает
+//        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-T.sig")) {
+//            fos.write(signer.CAdES_T(listCert.get(number), password, file, "http://testca2012.cryptopro.ru/tsp/tsp.srf", false));
+//        }
+//
+//        // Работает
+//        try (FileOutputStream fos = new FileOutputStream(path + "/output/CAdES-X Long Type 1.sig")) {
+//            fos.write(signer.CAdES_X_LONG_TYPE_1(listCert.get(number), password, file, "http://testca2012.cryptopro.ru/tsp/tsp.srf", false));
+//        }
+//
+//        // XML-DSig
+//
+//        // Работает
+//        try (FileOutputStream fos = new FileOutputStream(path + "/output/XAdES-BES.xml")) {
+//            fos.write(signer.XAdES_BES(listCert.get(number), password, fileXML, "acct"));
+//        }
+//
+//        // Работает
+//        try (FileOutputStream fos = new FileOutputStream(path + "/output/XAdES-T.xml")) {
+//            fos.write(signer.XAdES_T(listCert.get(number), password, fileXML, "http://testca2012.cryptopro.ru/tsp/tsp.srf", "acct"));
+//        }
+//
+//        // WS-Security
+//
+//        // PAdES
     }
 
     private static String getThumbprint(X509Certificate cert)
@@ -135,8 +130,20 @@ public class ShowKeys {
         byte[] der = cert.getEncoded();
         md.update(der);
         byte[] digest = md.digest();
-        String digestHex = new String(digest, StandardCharsets.UTF_8);
-        //DatatypeConverter.printHexBinary(digest);
-        return digestHex.toLowerCase();
+
+
+
+        StringBuilder hexStringBuffer = new StringBuilder();
+        for (byte b : digest) {
+            hexStringBuffer.append(byteToHex(b));
+        }
+        return hexStringBuffer.toString().toLowerCase();
+    }
+
+    public static String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
     }
 }
