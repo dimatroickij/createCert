@@ -67,7 +67,7 @@ public class ShowKeys {
         //Scanner in = new Scanner(System.in);
         int number = 0;
         //int number = in.nextInt();
-        String password = "12345678";
+        String password = "123456";
         String path = "src/main/resources/";
         Signer signer = new Signer();
         List<String> certChain = new ArrayList<>();
@@ -130,8 +130,6 @@ public class ShowKeys {
         byte[] der = cert.getEncoded();
         md.update(der);
         byte[] digest = md.digest();
-
-
 
         StringBuilder hexStringBuffer = new StringBuilder();
         for (byte b : digest) {
