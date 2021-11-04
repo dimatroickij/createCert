@@ -14,8 +14,28 @@ import java.util.Date;
 public class CertificateDto {
 
     @NotBlank
-    @Schema(description = "CN - Общее имя")
+    @Schema(description = "CN")
     private String CommonName;
+
+//    @NotBlank
+//    @Schema(description = "SN")
+//    private String SurName;
+//
+//    @NotBlank
+//    @Schema(description = "GN")
+//    private String GivenName;
+//
+//    @Schema(description = "C")
+//    private String Country;
+//
+//    @Schema(description = "ST")
+//    private String ST;
+//
+//    @Schema(description = "L")
+//    private String L;
+//
+//    @Schema(description = "EMAILADDRESS")
+//    private String Email;
 
     @NotBlank
     @Schema(description = "Alias - Название контейнера")

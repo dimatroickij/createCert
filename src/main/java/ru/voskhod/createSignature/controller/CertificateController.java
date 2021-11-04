@@ -46,7 +46,7 @@ public class CertificateController {
             try {
                 X509Certificate certificate = (X509Certificate) hdImageStore.getCertificate(s);
                 BigInteger serialNumber = certificate.getSerialNumber();
-                String CN = certificate.getSubjectDN().toString().split(",")[0];
+                String CN = certificate.getSubjectDN().toString();
                 String publicKey = certificate.getPublicKey().getAlgorithm();
                 String serial = serialNumber.toString(16);
                 CertificateDto certDto = new CertificateDto(CN, s, publicKey, serial, getThumbprint(certificate),
