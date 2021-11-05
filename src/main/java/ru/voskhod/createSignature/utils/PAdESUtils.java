@@ -1,0 +1,107 @@
+package ru.voskhod.createSignature.utils;
+
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.security.*;
+import com.objsys.asn1j.runtime.*;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.bouncycastle.tsp.TimeStampResponse;
+import ru.CryptoPro.CAdES.CAdESType;
+import ru.CryptoPro.JCP.ASN.CryptographicMessageSyntax.*;
+import ru.CryptoPro.JCP.ASN.PKIX1Explicit88.CertificateSerialNumber;
+import ru.CryptoPro.JCP.ASN.PKIX1Explicit88.Name;
+import ru.CryptoPro.JCP.JCP;
+import ru.CryptoPro.JCP.params.OID;
+import ru.CryptoPro.JCP.tools.AlgorithmUtility;
+import ru.CryptoPro.reprov.x509.X509CertImpl;
+
+import java.io.*;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+
+public class PAdESUtils {
+
+    public static byte[] createPAdES(byte[] dataPDF, String alias, String password, String tsp) throws Exception {
+        KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
+        hdImageStore.load(null, null);
+        PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
+
+        PdfReader reader = new PdfReader(dataPDF);
+        ByteArrayOutputStream signatureStream = new ByteArrayOutputStream();
+        PdfStamper stp = PdfStamper.createSignature(reader, signatureStream, '\0');
+
+        PdfSignatureAppearance sap = stp.getSignatureAppearance();
+
+        Certificate[] chainArray = hdImageStore.getCertificateChain(alias);
+        sap.setCertificate(chainArray[0]);
+
+        //sap.setVisibleSignature(new Rectangle(100, 100, 200, 200), 1, null);
+
+        PdfSignature dic = new PdfSignature(PdfName.ADOBE_CryptoProPDF, PdfName.ETSI_CADES_DETACHED);
+        dic.setReason(sap.getReason());
+        dic.setLocation(sap.getLocation());
+        dic.setSignatureCreator(sap.getSignatureCreator());
+        dic.setContact(sap.getContact());
+        dic.setDate(new PdfDate(sap.getSignDate())); // time-stamp will over-rule this
+
+        sap.setCryptoDictionary(dic);
+        int estimatedSize = 8192;
+
+        HashMap<PdfName, Integer> exc = new HashMap<PdfName, Integer>();
+        exc.put(PdfName.CONTENTS, estimatedSize * 2 + 2);
+
+        sap.preClose(exc);
+        String pubKeyAlg = chainArray[0].getPublicKey().getAlgorithm();
+        String digestOid = AlgorithmUtility.keyAlgToDigestOid(pubKeyAlg);
+
+        InputStream data = sap.getRangeStream();
+        MessageDigest md = MessageDigest.getInstance(digestOid);
+        byte hash[] = DigestAlgorithms.digest(data, md);
+
+        String digestAlgorithmName = md.getAlgorithm();
+
+        CMSUtils cmsUtils = new CMSUtils(hash, alias, password, true);
+//        byte[] x = cmsUtils.createCMS(true, true, true);
+        byte[] x = CAdESUtils.createCAdES(hash, alias, password, null, true, CAdESType.CAdES_BES);
+        PdfPKCS7 sgn = new PdfPKCS7(privateKey, chainArray, digestAlgorithmName, JCP.PROVIDER_NAME,
+                new BouncyCastleDigest(), false);
+
+        Calendar cal = Calendar.getInstance();
+
+        byte[] sh = sgn.getAuthenticatedAttributeBytes(hash, cal,
+                null, null, MakeSignature.CryptoStandard.CADES);
+
+        sgn.update(sh, 0, sh.length);
+
+        byte[] encodedSig = sgn.getEncodedPKCS7(hash, cal, null, null, null,
+                MakeSignature.CryptoStandard.CADES);
+
+        if (estimatedSize < encodedSig.length) {
+            throw new IOException("Not enough space");
+        } // if
+
+        byte[] paddedSig = new byte[estimatedSize];
+        System.arraycopy(encodedSig, 0, paddedSig, 0, encodedSig.length);
+
+        PdfDictionary dic2 = new PdfDictionary();
+        dic2.put(PdfName.CONTENTS, new PdfString(paddedSig).setHexWriting(true));
+
+        sap.close(dic2);
+        stp.close();
+        reader.close();
+
+        return signatureStream.toByteArray();
+    }
+
+}

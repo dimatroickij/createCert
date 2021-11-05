@@ -10,23 +10,37 @@ import ru.CryptoPro.JCP.JCP;
 import ru.CryptoPro.JCP.params.OID;
 import ru.CryptoPro.JCP.tools.AlgorithmUtility;
 
-import java.security.PrivateKey;
+import java.security.*;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
-public class CMSprocessing {
-    public static byte[] createCMS(PrivateKey privateKey, Certificate cert, boolean detached, byte[] data,
-                                   boolean isContentType, boolean isTime, boolean isSigningCertificateV2) throws Exception {
+public class CMSUtils {
+
+    byte[] data;
+    String alias;
+    String password;
+    boolean detached;
+    String hash;
+
+    public CMSUtils(byte[] data, String alias, String password, boolean detached) {
+        this.data = data;
+        this.alias = alias;
+        this.password = password;
+        this.detached = detached;
+
+    }
+
+    public byte[] createCMS(boolean isContentType, boolean isTime, boolean isSigningCertificateV2) throws Exception {
+        KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
+        hdImageStore.load(null, null);
+        PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
+        Certificate cert = hdImageStore.getCertificate(alias);
         String pubKeyAlg = cert.getPublicKey().getAlgorithm();
         String digestOid = AlgorithmUtility.keyAlgToDigestOid(pubKeyAlg);
-        String keyOid = AlgorithmUtility.keyAlgToKeyAlgorithmOid(pubKeyAlg); // алгоритм ключа подписи
-        String signOid = AlgorithmUtility.keyAlgToSignatureOid(privateKey.getAlgorithm());
-
-        final ContentInfo all = new ContentInfo();
-        final SignedData cms = new SignedData();
-
+        ContentInfo all = new ContentInfo();
+        SignedData cms = new SignedData();
 
         all.contentType = new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_SIGNED).value);
         all.content = cms;
@@ -34,7 +48,7 @@ public class CMSprocessing {
 
         // digest
         cms.digestAlgorithms = new DigestAlgorithmIdentifiers(1);
-        final DigestAlgorithmIdentifier a = new DigestAlgorithmIdentifier(new OID(digestOid).value);
+        DigestAlgorithmIdentifier a = new DigestAlgorithmIdentifier(new OID(digestOid).value);
 
         a.parameters = new Asn1Null();
         cms.digestAlgorithms.elements[0] = a;
@@ -59,7 +73,8 @@ public class CMSprocessing {
         cms.certificates.elements[0] = new CertificateChoices();
         cms.certificates.elements[0].set_certificate(certificate);
 
-        final java.security.Signature signature = Signature.getInstance(signOid, JCP.PROVIDER_NAME);
+        final java.security.Signature signature = Signature.getInstance(
+                AlgorithmUtility.keyAlgToSignatureOid(privateKey.getAlgorithm()), JCP.PROVIDER_NAME);
         byte[] sign;
 
         // signer info
@@ -73,11 +88,12 @@ public class CMSprocessing {
         final Name name = new Name();
         name.decode(nameBuf);
 
-        final CertificateSerialNumber num = new CertificateSerialNumber(((X509Certificate) cert).getSerialNumber());
+        CertificateSerialNumber num = new CertificateSerialNumber(((X509Certificate) cert).getSerialNumber());
         cms.signerInfos.elements[0].sid.set_issuerAndSerialNumber(new IssuerAndSerialNumber(name, num));
         cms.signerInfos.elements[0].digestAlgorithm = new DigestAlgorithmIdentifier(new OID(digestOid).value);
         cms.signerInfos.elements[0].digestAlgorithm.parameters = new Asn1Null();
-        cms.signerInfos.elements[0].signatureAlgorithm = new SignatureAlgorithmIdentifier(new OID(keyOid).value);
+        cms.signerInfos.elements[0].signatureAlgorithm = new SignatureAlgorithmIdentifier(
+                new OID(AlgorithmUtility.keyAlgToKeyAlgorithmOid(pubKeyAlg)).value);
         cms.signerInfos.elements[0].signatureAlgorithm.parameters = new Asn1Null();
 
         final int kmax = 1 + (isContentType ? 1 : 0) + (isTime ? 1 : 0) + (isSigningCertificateV2 ? 1 : 0);
@@ -101,6 +117,8 @@ public class CMSprocessing {
 
         final Asn1Type messageDigest = new Asn1OctetString(messageDigestBlob);
 
+        hash = messageDigest.toString();
+
         cms.signerInfos.elements[0].signedAttrs.elements[k].values.elements[0] = messageDigest;
 
         //-contentType
@@ -113,7 +131,7 @@ public class CMSprocessing {
         }
 
         //-Time
-        if (isTime){
+        if (isTime) {
             k += 1;
             cms.signerInfos.elements[0].signedAttrs.elements[k] =
                     new Attribute(new OID(CMStools.STR_CMS_OID_SIGN_TYM_ATTR).value, new Attribute_values(1));
@@ -175,5 +193,9 @@ public class CMSprocessing {
         final Asn1BerEncodeBuffer asnBuf = new Asn1BerEncodeBuffer();
         all.encode(asnBuf, true);
         return asnBuf.getMsgCopy();
+    }
+
+    public String getHash() {
+        return hash;
     }
 }
