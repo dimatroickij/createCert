@@ -16,6 +16,7 @@ import ru.CryptoPro.JCPxml.xmldsig.JCPXMLDSigInit;
 import ru.CryptoPro.XAdES.XAdESType;
 import ru.CryptoPro.reprov.RevCheck;
 import ru.voskhod.createSignature.utils.*;
+
 import java.security.*;
 
 @RestController
@@ -75,8 +76,8 @@ public class SignatureController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/xmldsig")
     public ResponseEntity<?> XMLDSig(@RequestBody byte[] data,
-                                      @RequestParam(value = "alias") String alias,
-                                      @RequestParam(value = "password") String password) throws Exception {
+                                     @RequestParam(value = "alias") String alias,
+                                     @RequestParam(value = "password") String password) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XMLUtils.createXMLDSig(data, alias, password));
     }
@@ -105,12 +106,13 @@ public class SignatureController {
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @Operation(summary = "Создание подписи wss")
+    @Operation(summary = "Создание подписи WS-Security")
     @PostMapping(value = "/wss", consumes = MediaType.APPLICATION_XML_VALUE)
-    public byte[] wss(@RequestBody byte[] data,
-                                       @RequestParam(value = "alias") String alias,
-                                       @RequestParam(value = "password") String password) throws Exception {
-        return null;
+    public ResponseEntity<?> wss(@RequestBody byte[] data,
+                                 @RequestParam(value = "alias") String alias,
+                                 @RequestParam(value = "password") String password) throws Exception {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
+                .body(WSSecurityUtils.createWSS(data, alias, password));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/pdf")})})
@@ -138,7 +140,10 @@ public class SignatureController {
         boolean isTime = false;
         boolean isSigningCertificateV2 = false;
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, detached);
-        //System.out.println(cmsUtils.getHash());
-        return cmsUtils.createCMS(isContentType, isTime, isSigningCertificateV2);
+        cmsUtils.createCMS(isContentType, isTime, isSigningCertificateV2);
+        byte[] signature = cmsUtils.getSignature();
+        byte[] digest = cmsUtils.getDigest();
+        String hash = cmsUtils.getHash();
+        return signature;
     }
 }

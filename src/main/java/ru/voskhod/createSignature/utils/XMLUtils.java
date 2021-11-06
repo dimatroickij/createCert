@@ -2,6 +2,7 @@ package ru.voskhod.createSignature.utils;
 
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
+import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import ru.CryptoPro.JCP.JCP;
@@ -15,11 +16,45 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 public class XMLUtils {
+
+    public static String VerifyXMLSignature = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyXMLSignature>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyXMLSignature>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
+
+    public static String VerifyXMLSignatureWithReport = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyXMLSignatureWithReport>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyXMLSignatureWithReport>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
+
+    public static String VerifyXMLSignatureWithSignedReport = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyXMLSignatureWithSignedReport>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyXMLSignatureWithSignedReport>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
 
     public static byte[] createXMLDSig(byte[] data, String alias, String password) throws Exception {
         KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
@@ -95,5 +130,66 @@ public class XMLUtils {
         signatureStream.close();
 
         return signatureStream.toByteArray();
+    }
+
+    public static byte[] createVerifyXMLSignature(byte[] data, boolean verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignature(data, null, null, verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyXMLSignature(byte[] data, String alias, String password,
+                                                  boolean verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignature(data, alias, password, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyXMLSignature(byte[] data, String alias, String password,
+                                                  boolean verifySignatureOnly, boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createXMLDSig(data, alias, password);
+        }
+        return VerifyXMLSignature.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static byte[] createVerifyXMLSignatureWithReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignatureWithReport(data, null, null, verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyXMLSignatureWithReport(byte[] data, String alias, String password,
+                                                            boolean verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignatureWithReport(data, alias, password, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyXMLSignatureWithReport(byte[] data, String alias, String password,
+                                                            boolean verifySignatureOnly,
+                                                            boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createXMLDSig(data, alias, password);
+        }
+        return VerifyXMLSignatureWithReport.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static byte[] createVerifyXMLSignatureWithSignedReport(byte[] data, boolean
+            verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignatureWithSignedReport(data, null, null,
+                verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyXMLSignatureWithSignedReport(byte[] data, String alias, String password,
+                                                                  boolean verifySignatureOnly) throws Exception {
+        return createVerifyXMLSignatureWithSignedReport(data, alias, password, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyXMLSignatureWithSignedReport(byte[] data, String alias, String password,
+                                                                  boolean verifySignatureOnly,
+                                                                  boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createXMLDSig(data, alias, password);
+        }
+        return VerifyXMLSignatureWithSignedReport.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
     }
 }

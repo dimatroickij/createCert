@@ -7,6 +7,7 @@ import com.itextpdf.text.pdf.security.*;
 import com.objsys.asn1j.runtime.*;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.bouncycastle.tsp.TimeStampResponse;
+import org.bouncycastle.util.encoders.Base64;
 import ru.CryptoPro.CAdES.CAdESType;
 import ru.CryptoPro.JCP.ASN.CryptographicMessageSyntax.*;
 import ru.CryptoPro.JCP.ASN.PKIX1Explicit88.CertificateSerialNumber;
@@ -17,6 +18,7 @@ import ru.CryptoPro.JCP.tools.AlgorithmUtility;
 import ru.CryptoPro.reprov.x509.X509CertImpl;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
@@ -31,6 +33,39 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 public class PAdESUtils {
+
+    static String VerifyPAdES = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+            "xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyPAdES>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyPAdES>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
+
+    static String VerifyPAdESWithReport = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyPAdESWithReport>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyPAdESWithReport>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
+
+    static String VerifyPAdESWithSignedReport = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+            "   <soapenv:Header/>\n" +
+            "   <soapenv:Body>\n" +
+            "      <esv:VerifyPAdESWithSignedReport>\n" +
+            "         <esv:message>{%message%}</esv:message>\n" +
+            "         <esv:verifySignatureOnly>{%verifySignatureOnly%}</esv:verifySignatureOnly>\n" +
+            "      </esv:VerifyPAdESWithSignedReport>\n" +
+            "   </soapenv:Body>\n" +
+            "</soapenv:Envelope>";
 
     public static byte[] createPAdES(byte[] dataPDF, String alias, String password, String tsp) throws Exception {
         KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
@@ -102,6 +137,67 @@ public class PAdESUtils {
         reader.close();
 
         return signatureStream.toByteArray();
+    }
+
+    public static byte[] createVerifyPAdES(byte[] data, boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdES(data, null, null, null, verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyPAdES(byte[] data, String alias, String password, String tsp,
+                                           boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdES(data, alias, password, tsp, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyPAdES(byte[] data, String alias, String password, String tsp,
+                                           boolean verifySignatureOnly, boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createPAdES(data, alias, password, tsp);
+        }
+        return VerifyPAdES.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static byte[] createVerifyPAdESWithReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdESWithReport(data, null, null, null,
+                verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyPAdESWithReport(byte[] data, String alias, String password, String tsp,
+                                                     boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdESWithReport(data, alias, password, tsp, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyPAdESWithReport(byte[] data, String alias, String password, String tsp,
+                                                     boolean verifySignatureOnly,
+                                                     boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createPAdES(data, alias, password, tsp);
+        }
+        return VerifyPAdESWithReport.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static byte[] createVerifyPAdESWithSignedReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdESWithSignedReport(data, null, null, null,
+                verifySignatureOnly, true);
+    }
+
+    public static byte[] createVerifyPAdESWithSignedReport(byte[] data, String alias, String password, String tsp,
+                                                           boolean verifySignatureOnly) throws Exception {
+        return createVerifyPAdESWithSignedReport(data, alias, password, tsp, verifySignatureOnly, false);
+    }
+
+    static byte[] createVerifyPAdESWithSignedReport(byte[] data, String alias, String password, String tsp,
+                                                           boolean verifySignatureOnly,
+                                                           boolean isSignature) throws Exception {
+        if (!isSignature) {
+            data = createPAdES(data, alias, password, tsp);
+        }
+        return VerifyPAdESWithSignedReport.replace("{%message%}", Base64.toBase64String(data))
+                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
+                .getBytes(StandardCharsets.UTF_8);
     }
 
 }
