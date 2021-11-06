@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +36,8 @@ public class CertificateController {
 
     @Operation(summary = "Список установленных сертификатов")
     @GetMapping("/all")
-    public List<CertificateDto> get() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+    public List<CertificateDto> get() throws KeyStoreException, CertificateException, IOException,
+            NoSuchAlgorithmException {
         hdImageStore.load(null, null);
         Enumeration<String> enumeration = hdImageStore.aliases();
         List<CertificateDto> listCert = new ArrayList<>();
@@ -50,8 +50,10 @@ public class CertificateController {
                 String publicKey = certificate.getPublicKey().getAlgorithm();
                 String serial = serialNumber.toString(16);
                 CertificateDto certDto = new CertificateDto(CN, s, publicKey, serial, getThumbprint(certificate),
-                        new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH).parse(certificate.getNotBefore().toString()),
-                        new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH).parse(certificate.getNotAfter().toString()));
+                        new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH)
+                                .parse(certificate.getNotBefore().toString()),
+                        new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH)
+                                .parse(certificate.getNotAfter().toString()));
                 listCert.add(certDto);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -64,7 +66,8 @@ public class CertificateController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json",
             schema = @Schema(implementation = CertificateDto.class))})})
     @GetMapping("/{id}")
-    public CertificateDto get(@PathVariable String id) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, ParseException {
+    public CertificateDto get(@PathVariable String id) throws CertificateException, IOException,
+            NoSuchAlgorithmException, KeyStoreException, ParseException {
         hdImageStore.load(null, null);
         X509Certificate certificate = (X509Certificate) hdImageStore.getCertificate(id);
         String CN = certificate.getSubjectDN().toString().split(",")[0];
@@ -72,8 +75,10 @@ public class CertificateController {
         BigInteger serialNumber = certificate.getSerialNumber();
         String serial = serialNumber.toString(16);
         return new CertificateDto(CN, id, publicKey, serial, getThumbprint(certificate),
-                new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH).parse(certificate.getNotBefore().toString()),
-                new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH).parse(certificate.getNotAfter().toString()));
+                new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH)
+                        .parse(certificate.getNotBefore().toString()),
+                new SimpleDateFormat("E MMM d H:m:s z y", Locale.ENGLISH)
+                        .parse(certificate.getNotAfter().toString()));
     }
 
     private static String getThumbprint(X509Certificate cert)

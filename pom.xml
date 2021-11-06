@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.voskhod</groupId>
     <artifactId>createSignature</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>createSignature</name>
     <description>Проект по созданию подписей различных типов</description>
     <properties>

@@ -65,9 +65,10 @@ public class SOAPController {
     public ResponseEntity<?> CAdES_BES(@RequestBody byte[] data,
                                        @RequestParam(value = "alias") String alias,
                                        @RequestParam(value = "password") String password,
-                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdES(data, alias, password, null, false, CAdESType.CAdES_BES, isVerifySignatureOnly));
+                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(CAdESUtils.createVerifyCAdES(data,
+                alias, password, null, false, CAdESType.CAdES_BES, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-BES с отчётом (проверяется как cms)")
@@ -76,9 +77,11 @@ public class SOAPController {
     public ResponseEntity<?> CAdES_BES_WithReport(@RequestBody byte[] data,
                                                   @RequestParam(value = "alias") String alias,
                                                   @RequestParam(value = "password") String password,
-                                                  @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                  @RequestParam(value = "isVerifySignatureOnly")
+                                                          boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, null, false, CAdESType.CAdES_BES, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, null, false,
+                        CAdESType.CAdES_BES, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-BES с подписанным отчетом (проверяется как cms)")
@@ -87,9 +90,11 @@ public class SOAPController {
     public ResponseEntity<?> CAdES_BES_WithSignedReport(@RequestBody byte[] data,
                                                         @RequestParam(value = "alias") String alias,
                                                         @RequestParam(value = "password") String password,
-                                                        @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                        @RequestParam(value = "isVerifySignatureOnly")
+                                                                boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, null, false, CAdESType.CAdES_BES, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, null, false,
+                        CAdESType.CAdES_BES, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-T (проверяется как cms)")
@@ -99,9 +104,11 @@ public class SOAPController {
                                      @RequestParam(value = "alias") String alias,
                                      @RequestParam(value = "password") String password,
                                      @RequestParam(value = "tsp") String tsp,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false, CAdESType.CAdES_T, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false, CAdESType.CAdES_T,
+                        isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-T с отчётом (проверяется как cms)")
@@ -111,9 +118,11 @@ public class SOAPController {
                                                 @RequestParam(value = "alias") String alias,
                                                 @RequestParam(value = "password") String password,
                                                 @RequestParam(value = "tsp") String tsp,
-                                                @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                        boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false, CAdESType.CAdES_T, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false,
+                        CAdESType.CAdES_T, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-T с подписанным отчётом (проверяется как cms)")
@@ -123,9 +132,11 @@ public class SOAPController {
                                                       @RequestParam(value = "alias") String alias,
                                                       @RequestParam(value = "password") String password,
                                                       @RequestParam(value = "tsp") String tsp,
-                                                      @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                              boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false, CAdESType.CAdES_T, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false,
+                        CAdESType.CAdES_T, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-X-Long-Type 1")
@@ -135,9 +146,11 @@ public class SOAPController {
                                      @RequestParam(value = "alias") String alias,
                                      @RequestParam(value = "password") String password,
                                      @RequestParam(value = "tsp") String tsp,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false, CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false,
+                        CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-X-Long-Type 1 с отчётом")
@@ -147,9 +160,11 @@ public class SOAPController {
                                                 @RequestParam(value = "alias") String alias,
                                                 @RequestParam(value = "password") String password,
                                                 @RequestParam(value = "tsp") String tsp,
-                                                @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                        boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false, CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false,
+                        CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку CAdES-X-Long-Type 1 с подписанным отчётом")
@@ -159,9 +174,11 @@ public class SOAPController {
                                                       @RequestParam(value = "alias") String alias,
                                                       @RequestParam(value = "password") String password,
                                                       @RequestParam(value = "tsp") String tsp,
-                                                      @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                              boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false, CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
+                .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false,
+                        CAdESType.CAdES_X_Long_Type_1, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку XML-DSig")
@@ -170,9 +187,10 @@ public class SOAPController {
     public ResponseEntity<?> XMLDSig(@RequestBody byte[] data,
                                      @RequestParam(value = "alias") String alias,
                                      @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XMLUtils.createVerifyXMLSignature(data, alias, password, isVerifySignatureOnly));
+                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(XMLUtils.createVerifyXMLSignature(data,
+                alias, password, isVerifySignatureOnly));
     }
 
     @Operation(summary = "Создание запроса на проверку XML-DSig с отчётом")
@@ -181,7 +199,8 @@ public class SOAPController {
     public ResponseEntity<?> XMLDSigWithReport(@RequestBody byte[] data,
                                                @RequestParam(value = "alias") String alias,
                                                @RequestParam(value = "password") String password,
-                                               @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                               @RequestParam(value = "isVerifySignatureOnly")
+                                                       boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XMLUtils.createVerifyXMLSignatureWithReport(data, alias, password, isVerifySignatureOnly));
     }
@@ -192,7 +211,8 @@ public class SOAPController {
     public ResponseEntity<?> XMLDSigWithSignedReport(@RequestBody byte[] data,
                                                      @RequestParam(value = "alias") String alias,
                                                      @RequestParam(value = "password") String password,
-                                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                     @RequestParam(value = "isVerifySignatureOnly")
+                                                             boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XMLUtils.createVerifyXMLSignatureWithSignedReport(data, alias, password, isVerifySignatureOnly));
     }
@@ -204,9 +224,11 @@ public class SOAPController {
                                        @RequestParam(value = "alias") String alias,
                                        @RequestParam(value = "password") String password,
                                        @RequestParam(value = "ref_acct") String ref_acct,
-                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                       @RequestParam(value = "isVerifySignatureOnly")
+                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdES(data, alias, password, null, ref_acct, XAdESType.XAdES_BES, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdES(data, alias, password, null, ref_acct, XAdESType.XAdES_BES,
+                        isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -216,9 +238,11 @@ public class SOAPController {
                                                  @RequestParam(value = "alias") String alias,
                                                  @RequestParam(value = "password") String password,
                                                  @RequestParam(value = "ref_acct") String ref_acct,
-                                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, null, ref_acct, XAdESType.XAdES_BES, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, null, ref_acct,
+                        XAdESType.XAdES_BES, isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -228,9 +252,11 @@ public class SOAPController {
                                                        @RequestParam(value = "alias") String alias,
                                                        @RequestParam(value = "password") String password,
                                                        @RequestParam(value = "ref_acct") String ref_acct,
-                                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                       @RequestParam(value = "isVerifySignatureOnly")
+                                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, null, ref_acct, XAdESType.XAdES_BES, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, null, ref_acct,
+                        XAdESType.XAdES_BES, isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -241,9 +267,11 @@ public class SOAPController {
                                      @RequestParam(value = "password") String password,
                                      @RequestParam(value = "tsp") String tsp,
                                      @RequestParam(value = "ref_acct") String ref_acct,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdES(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdES(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T,
+                        isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -254,9 +282,11 @@ public class SOAPController {
                                                 @RequestParam(value = "password") String password,
                                                 @RequestParam(value = "tsp") String tsp,
                                                 @RequestParam(value = "ref_acct") String ref_acct,
-                                                @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                        boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T,
+                        isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -267,9 +297,11 @@ public class SOAPController {
                                                       @RequestParam(value = "password") String password,
                                                       @RequestParam(value = "tsp") String tsp,
                                                       @RequestParam(value = "ref_acct") String ref_acct,
-                                                      @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                              boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T, isVerifySignatureOnly));
+                .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, tsp, ref_acct,
+                        XAdESType.XAdES_T, isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -278,7 +310,8 @@ public class SOAPController {
     public ResponseEntity<?> WSS(@RequestBody byte[] data,
                                  @RequestParam(value = "alias") String alias,
                                  @RequestParam(value = "password") String password,
-                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(WSSecurityUtils.createVerifyWSSSignature(data, alias, password, isVerifySignatureOnly));
     }
@@ -289,7 +322,8 @@ public class SOAPController {
     public ResponseEntity<?> WSSWithReport(@RequestBody byte[] data,
                                            @RequestParam(value = "alias") String alias,
                                            @RequestParam(value = "password") String password,
-                                           @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                           @RequestParam(value = "isVerifySignatureOnly")
+                                                   boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(WSSecurityUtils.createVerifyWSSSignatureWithReport(data, alias, password, isVerifySignatureOnly));
     }
@@ -300,9 +334,11 @@ public class SOAPController {
     public ResponseEntity<?> WSSWithSignedReport(@RequestBody byte[] data,
                                                  @RequestParam(value = "alias") String alias,
                                                  @RequestParam(value = "password") String password,
-                                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(WSSecurityUtils.createVerifyWSSSignatureWithSignedReport(data, alias, password, isVerifySignatureOnly));
+                .body(WSSecurityUtils.createVerifyWSSSignatureWithSignedReport(data, alias, password,
+                        isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -312,7 +348,8 @@ public class SOAPController {
                                    @RequestParam(value = "alias") String alias,
                                    @RequestParam(value = "password") String password,
                                    @RequestParam(value = "tsp", required = false) String tsp,
-                                   @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                   @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(PAdESUtils.createVerifyPAdES(dataPDF, alias, password, tsp, isVerifySignatureOnly));
     }
@@ -324,7 +361,8 @@ public class SOAPController {
                                              @RequestParam(value = "alias") String alias,
                                              @RequestParam(value = "password") String password,
                                              @RequestParam(value = "tsp", required = false) String tsp,
-                                             @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                             @RequestParam(value = "isVerifySignatureOnly")
+                                                     boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(PAdESUtils.createVerifyPAdESWithReport(dataPDF, alias, password, tsp, isVerifySignatureOnly));
     }
@@ -336,9 +374,11 @@ public class SOAPController {
                                                    @RequestParam(value = "alias") String alias,
                                                    @RequestParam(value = "password") String password,
                                                    @RequestParam(value = "tsp", required = false) String tsp,
-                                                   @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                   @RequestParam(value = "isVerifySignatureOnly")
+                                                           boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(PAdESUtils.createVerifyPAdESWithSignedReport(dataPDF, alias, password, tsp, isVerifySignatureOnly));
+                .body(PAdESUtils.createVerifyPAdESWithSignedReport(dataPDF, alias, password, tsp,
+                        isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -347,15 +387,13 @@ public class SOAPController {
     public ResponseEntity<?> CMS(@RequestBody byte[] data,
                                  @RequestParam(value = "alias") String alias,
                                  @RequestParam(value = "password") String password,
-                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMS(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMS(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -364,15 +402,13 @@ public class SOAPController {
     public ResponseEntity<?> CMSWithReport(@RequestBody byte[] data,
                                            @RequestParam(value = "alias") String alias,
                                            @RequestParam(value = "password") String password,
-                                           @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                           @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false, false,
+                false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSWithReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSWithReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -381,15 +417,13 @@ public class SOAPController {
     public ResponseEntity<?> CMSWithSignedReport(@RequestBody byte[] data,
                                                  @RequestParam(value = "alias") String alias,
                                                  @RequestParam(value = "password") String password,
-                                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                         boolean isVerifySignatureOnly) throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSWithSignedReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSWithSignedReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -398,15 +432,13 @@ public class SOAPController {
     public ResponseEntity<?> CMShash(@RequestBody byte[] data,
                                      @RequestParam(value = "alias") String alias,
                                      @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSByHash(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSByHash(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -415,15 +447,13 @@ public class SOAPController {
     public ResponseEntity<?> CMShashWithReport(@RequestBody byte[] data,
                                                @RequestParam(value = "alias") String alias,
                                                @RequestParam(value = "password") String password,
-                                               @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                               @RequestParam(value = "isVerifySignatureOnly")
+                                                       boolean isVerifySignatureOnly) throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSByHashWithReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSByHashWithReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -432,15 +462,13 @@ public class SOAPController {
     public ResponseEntity<?> CMShashWithSignedReport(@RequestBody byte[] data,
                                                      @RequestParam(value = "alias") String alias,
                                                      @RequestParam(value = "password") String password,
-                                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                     @RequestParam(value = "isVerifySignatureOnly")
+                                                             boolean isVerifySignatureOnly) throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSByHashWithSignedReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSByHashWithSignedReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -449,15 +477,13 @@ public class SOAPController {
     public ResponseEntity<?> CMSdetached(@RequestBody byte[] data,
                                          @RequestParam(value = "alias") String alias,
                                          @RequestParam(value = "password") String password,
-                                         @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                         @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+            throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSDetached(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSDetached(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -466,16 +492,13 @@ public class SOAPController {
     public ResponseEntity<?> CMSdetachedWithReport(@RequestBody byte[] data,
                                                    @RequestParam(value = "alias") String alias,
                                                    @RequestParam(value = "password") String password,
-                                                   @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                   @RequestParam(value = "isVerifySignatureOnly")
+                                                           boolean isVerifySignatureOnly) throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
-        cmsUtils.createCMS(isContentType, isTime, isSigningCertificateV2);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSDetachedWithReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSDetachedWithReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -484,15 +507,13 @@ public class SOAPController {
     public ResponseEntity<?> CMSdetachedWithSignedReport(@RequestBody byte[] data,
                                                          @RequestParam(value = "alias") String alias,
                                                          @RequestParam(value = "password") String password,
-                                                         @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                         @RequestParam(value = "isVerifySignatureOnly")
+                                                                 boolean isVerifySignatureOnly) throws Exception {
 
-        // Добавление или исключение подписанных атрибутов
-        boolean isContentType = false;
-        boolean isTime = false;
-        boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true);
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
+                false, false);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
-                .body(cmsUtils.createVerifyCMSDetachedWithSignedReport(isContentType, isTime, isSigningCertificateV2, isVerifySignatureOnly));
+                .body(cmsUtils.createVerifyCMSDetachedWithSignedReport(isVerifySignatureOnly));
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
@@ -511,7 +532,8 @@ public class SOAPController {
             "Проверяется присланный пользователем штамп времени.")
     @PostMapping(value = "/TimeStampWithReport")
     public ResponseEntity<?> TimeStampWithReport(@RequestBody byte[] data,
-                                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(TimeStampUtils.createVerifyTimeStampWithReport(data, isVerifySignatureOnly));
     }
@@ -521,7 +543,8 @@ public class SOAPController {
             "Проверяется присланный пользователем штамп времени.")
     @PostMapping(value = "/TimeStampWithSignedReport")
     public ResponseEntity<?> TimeStampWithSignedReport(@RequestBody byte[] data,
-                                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly) throws Exception {
+                                                       @RequestParam(value = "isVerifySignatureOnly")
+                                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(TimeStampUtils.createVerifyTimeStampWithSignedReport(data, isVerifySignatureOnly));
     }

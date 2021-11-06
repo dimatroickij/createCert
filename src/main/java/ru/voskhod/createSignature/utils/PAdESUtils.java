@@ -106,7 +106,7 @@ public class PAdESUtils {
 
         String digestAlgorithmName = md.getAlgorithm();
 
-        CMSUtils cmsUtils = new CMSUtils(hash, alias, password, true);
+        //CMSUtils cmsUtils = new CMSUtils(hash, alias, password, true, false, false, false);
 //        byte[] x = cmsUtils.createCMS(true, true, true);
         byte[] x = CAdESUtils.createCAdES(hash, alias, password, null, true, CAdESType.CAdES_BES);
         PdfPKCS7 sgn = new PdfPKCS7(privateKey, chainArray, digestAlgorithmName, JCP.PROVIDER_NAME,
@@ -149,7 +149,7 @@ public class PAdESUtils {
     }
 
     static byte[] createVerifyPAdES(byte[] data, String alias, String password, String tsp,
-                                           boolean verifySignatureOnly, boolean isSignature) throws Exception {
+                                    boolean verifySignatureOnly, boolean isSignature) throws Exception {
         if (!isSignature) {
             data = createPAdES(data, alias, password, tsp);
         }
@@ -169,8 +169,8 @@ public class PAdESUtils {
     }
 
     static byte[] createVerifyPAdESWithReport(byte[] data, String alias, String password, String tsp,
-                                                     boolean verifySignatureOnly,
-                                                     boolean isSignature) throws Exception {
+                                              boolean verifySignatureOnly,
+                                              boolean isSignature) throws Exception {
         if (!isSignature) {
             data = createPAdES(data, alias, password, tsp);
         }
@@ -190,8 +190,8 @@ public class PAdESUtils {
     }
 
     static byte[] createVerifyPAdESWithSignedReport(byte[] data, String alias, String password, String tsp,
-                                                           boolean verifySignatureOnly,
-                                                           boolean isSignature) throws Exception {
+                                                    boolean verifySignatureOnly,
+                                                    boolean isSignature) throws Exception {
         if (!isSignature) {
             data = createPAdES(data, alias, password, tsp);
         }

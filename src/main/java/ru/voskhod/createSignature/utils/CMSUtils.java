@@ -22,15 +22,13 @@ import java.util.Calendar;
 public class CMSUtils {
 
     byte[] data;
-    String alias;
-    String password;
-    boolean detached;
     byte[] signature;
+    boolean detached;
     String hash;
     byte[] digest;
 
-    public static String VerifyCMSSignature = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
-            "xmlns:esv=\"http://esv.server.rt.ru\">\n" +
+    public static String VerifyCMSSignature = "<soapenv:Envelope " +
+            "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
             "   <soapenv:Header/>\n" +
             "   <soapenv:Body>\n" +
             "      <esv:VerifyCMSSignature>\n" +
@@ -134,15 +132,63 @@ public class CMSUtils {
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
 
-    public CMSUtils(byte[] data, String alias, String password, boolean detached) {
+    public CMSUtils(byte[] data, String alias, String password, boolean detached, boolean isContentType, boolean isTime,
+                    boolean isSigningCertificateV2) throws Exception {
         this.data = data;
-        this.alias = alias;
-        this.password = password;
         this.detached = detached;
-
+        createCMS(alias, password, isContentType, isTime, isSigningCertificateV2);
     }
 
-    public void createCMS(boolean isContentType, boolean isTime, boolean isSigningCertificateV2) throws Exception {
+    public CMSUtils(byte[] signature) throws Exception {
+        this.signature = signature;
+        this.detached = false;
+
+        ContentInfo all = new ContentInfo();
+        Asn1BerDecodeBuffer asn1Buf = new Asn1BerDecodeBuffer(signature);
+        all.decode(asn1Buf);
+        SignedData cms = (SignedData) all.content;
+
+        this.data = cms.encapContentInfo.eContent.value;
+
+        Asn1BerEncodeBuffer encodeBuffer = new Asn1BerEncodeBuffer();
+        cms.certificates.elements[0].encode(encodeBuffer);
+
+        final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        final X509Certificate cert = (X509Certificate) cf
+                .generateCertificate(encodeBuffer.getInputStream());
+
+        String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
+
+        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
+        this.hash = new Asn1OctetString(this.digest).toString();
+    }
+
+    public CMSUtils(byte[] signature, byte[] data) throws Exception {
+        this.signature = signature;
+        this.detached = true;
+        this.data = data;
+
+        ContentInfo all = new ContentInfo();
+        Asn1BerDecodeBuffer asn1Buf = new Asn1BerDecodeBuffer(signature);
+        all.decode(asn1Buf);
+
+        SignedData cms = (SignedData) all.content;
+
+        Asn1BerEncodeBuffer encodeBuffer = new Asn1BerEncodeBuffer();
+        cms.certificates.elements[0].encode(encodeBuffer);
+
+        final CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        final X509Certificate cert = (X509Certificate) cf
+                .generateCertificate(encodeBuffer.getInputStream());
+
+        String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
+
+        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
+        this.hash = new Asn1OctetString(this.digest).toString();
+    }
+
+    private void createCMS(String alias, String password, boolean isContentType, boolean isTime,
+                           boolean isSigningCertificateV2) throws Exception {
         KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
         hdImageStore.load(null, null);
         PrivateKey privateKey = (PrivateKey) hdImageStore.getKey(alias, password.toCharArray());
@@ -214,19 +260,17 @@ public class CMSUtils {
         cms.signerInfos.elements[0].signedAttrs.elements[k] =
                 new Attribute(new OID(CMStools.STR_CMS_OID_DIGEST_ATTR).value, new Attribute_values(1));
 
-        final byte[] messageDigestBlob;
         if (cms.encapContentInfo.eContent != null) {
-            messageDigestBlob = CMStools.digestm(cms.encapContentInfo.eContent.value, digestOid, JCP.PROVIDER_NAME);
+            digest = CMStools.digestm(cms.encapContentInfo.eContent.value, digestOid, JCP.PROVIDER_NAME);
         } // if
         else if (data != null) {
-            messageDigestBlob = CMStools.digestm(data, digestOid, JCP.PROVIDER_NAME);
+            digest = CMStools.digestm(data, digestOid, JCP.PROVIDER_NAME);
         } // else
         else {
             throw new Exception("No content");
         } // else
-        final Asn1Type messageDigest = new Asn1OctetString(messageDigestBlob);
+        final Asn1Type messageDigest = new Asn1OctetString(digest);
         hash = messageDigest.toString();
-        digest = messageDigestBlob;
 
         cms.signerInfos.elements[0].signedAttrs.elements[k].values.elements[0] = messageDigest;
 
@@ -305,7 +349,7 @@ public class CMSUtils {
     }
 
     public byte[] getSignature() {
-        return signature;
+        return this.signature;
     }
 
     public String getHash() {
@@ -313,270 +357,61 @@ public class CMSUtils {
     }
 
     public byte[] getDigest() {
-        return digest;
+        return this.digest;
     }
 
-    public byte[] createVerifyCMS(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMS(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMS(boolean isContentType, boolean isTime,
-                                  boolean isSigningCertificateV2, boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMS(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMS(boolean isContentType, boolean isTime,
-                                  boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                  boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignature.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMS(boolean verifySignatureOnly) {
+        return VerifyCMSSignature.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
                 .getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSWithReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSWithReport(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSWithReport(boolean isContentType, boolean isTime,
-                                            boolean isSigningCertificateV2,
-                                            boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSWithReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSWithReport(boolean isContentType, boolean isTime,
-                                            boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                            boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignatureWithReport.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMSWithReport(boolean verifySignatureOnly) {
+        return VerifyCMSSignatureWithReport.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
                 .getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSWithSignedReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSWithSignedReport(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSWithSignedReport(boolean isContentType, boolean isTime,
-                                                  boolean isSigningCertificateV2,
-                                                  boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSWithSignedReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSWithSignedReport(boolean isContentType, boolean isTime,
-                                                  boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                                  boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignatureWithSignedReport.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMSWithSignedReport(boolean verifySignatureOnly) {
+        return VerifyCMSSignatureWithSignedReport.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
                 .getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSByHash(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHash(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSByHash(boolean isContentType, boolean isTime,
-                                        boolean isSigningCertificateV2, boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHash(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSByHash(boolean isContentType, boolean isTime,
-                                        boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                        boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignatureByHash.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMSByHash(boolean verifySignatureOnly) {
+        return VerifyCMSSignatureByHash.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%hash%}", Base64.toBase64String(digest))
-                .getBytes(StandardCharsets.UTF_8);
+                .replace("{%hash%}", Base64.toBase64String(this.digest)).getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSByHashWithReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHashWithReport(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSByHashWithReport(boolean isContentType, boolean isTime,
-                                                  boolean isSigningCertificateV2,
-                                                  boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHashWithReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSByHashWithReport(boolean isContentType, boolean isTime,
-                                                  boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                                  boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignatureByHashWithReport.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMSByHashWithReport(boolean verifySignatureOnly) {
+        return VerifyCMSSignatureByHashWithReport.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%hash%}", Base64.toBase64String(digest))
-                .getBytes(StandardCharsets.UTF_8);
+                .replace("{%hash%}", Base64.toBase64String(this.digest)).getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSByHashWithSignedReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHashWithSignedReport(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSByHashWithSignedReport(boolean isContentType, boolean isTime,
-                                                        boolean isSigningCertificateV2,
-                                                        boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSByHashWithSignedReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSByHashWithSignedReport(boolean isContentType, boolean isTime,
-                                                        boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                                        boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
+    public byte[] createVerifyCMSByHashWithSignedReport(boolean verifySignatureOnly) {
         return VerifyCMSSignatureByHashWithSignedReport.replace("{%message%}", Base64.toBase64String(signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%hash%}", Base64.toBase64String(digest))
-                .getBytes(StandardCharsets.UTF_8);
+                .replace("{%hash%}", Base64.toBase64String(this.digest)).getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSDetached(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetached(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSDetached(boolean isContentType, boolean isTime,
-                                          boolean isSigningCertificateV2,
-                                          boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetached(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSDetached(boolean isContentType, boolean isTime,
-                                          boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                          boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
-        return VerifyCMSSignatureDetached.replace("{%message%}", Base64.toBase64String(signature))
+    public byte[] createVerifyCMSDetached(boolean verifySignatureOnly) {
+        return VerifyCMSSignatureDetached.replace("{%message%}", Base64.toBase64String(this.signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%originalContent%}", Base64.toBase64String(data))
-                .getBytes(StandardCharsets.UTF_8);
+                .replace("{%originalContent%}", Base64.toBase64String(data)).getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSDetachedWithReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetachedWithReport(false, false, false,
-                verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSDetachedWithReport(boolean isContentType, boolean isTime,
-                                                    boolean isSigningCertificateV2,
-                                                    boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetachedWithReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSDetachedWithReport(boolean isContentType, boolean isTime,
-                                                    boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                                    boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
+    public byte[] createVerifyCMSDetachedWithReport(boolean verifySignatureOnly) {
         return VerifyCMSSignatureDetachedWithReport.replace("{%message%}", Base64.toBase64String(signature))
                 .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%originalContent%}", Base64.toBase64String(data))
-                .getBytes(StandardCharsets.UTF_8);
+                .replace("{%originalContent%}", Base64.toBase64String(data)).getBytes(StandardCharsets.UTF_8);
     }
 
-    public byte[] createVerifyCMSDetachedWithSignedReport(boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetachedWithSignedReport(false, false,
-                false, verifySignatureOnly, true);
-    }
-
-    public byte[] createVerifyCMSDetachedWithSignedReport(boolean isContentType, boolean isTime,
-                                                          boolean isSigningCertificateV2,
-                                                          boolean verifySignatureOnly) throws Exception {
-        return createVerifyCMSDetachedWithSignedReport(isContentType, isTime, isSigningCertificateV2,
-                verifySignatureOnly, false);
-    }
-
-    public byte[] createVerifyCMSDetachedWithSignedReport(boolean isContentType, boolean isTime,
-                                                          boolean isSigningCertificateV2, boolean verifySignatureOnly,
-                                                          boolean isSignature) throws Exception {
-        if (!isSignature) {
-            createCMS(isContentType, isTime, isSigningCertificateV2);
-        }
+    public byte[] createVerifyCMSDetachedWithSignedReport(boolean verifySignatureOnly) {
         return VerifyCMSSignatureDetachedWithSignedReport.replace("{%message%}",
-                        Base64.toBase64String(signature))
-                .replace("{%verifySignatureOnly%}", String.valueOf(verifySignatureOnly))
-                .replace("{%originalContent%}", Base64.toBase64String(data))
-                .getBytes(StandardCharsets.UTF_8);
-    }
-
-    public CMSUtils(byte[] signature) throws Exception {
-        this.alias = "";
-        this.password = "";
-        this.signature = signature;
-        this.detached = false;
-
-        ContentInfo all = new ContentInfo();
-        Asn1BerDecodeBuffer asn1Buf = new Asn1BerDecodeBuffer(signature);
-        all.decode(asn1Buf);
-        SignedData cms = (SignedData) all.content;
-
-        this.data = cms.encapContentInfo.eContent.value;
-
-        Asn1BerEncodeBuffer encodeBuffer = new Asn1BerEncodeBuffer();
-        cms.certificates.elements[0].encode(encodeBuffer);
-
-        final CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        final X509Certificate cert = (X509Certificate) cf
-                .generateCertificate(encodeBuffer.getInputStream());
-
-        String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
-
-        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
-        this.hash = new Asn1OctetString(this.digest).toString();
-    }
-
-    public CMSUtils(byte[] signature, byte[] data) throws Exception {
-        this.alias = "";
-        this.password = "";
-        this.signature = signature;
-        this.detached = true;
-        this.data = data;
-
-        ContentInfo all = new ContentInfo();
-        Asn1BerDecodeBuffer asn1Buf = new Asn1BerDecodeBuffer(signature);
-        all.decode(asn1Buf);
-
-        SignedData cms = (SignedData) all.content;
-
-        Asn1BerEncodeBuffer encodeBuffer = new Asn1BerEncodeBuffer();
-        cms.certificates.elements[0].encode(encodeBuffer);
-
-        final CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        final X509Certificate cert = (X509Certificate) cf
-                .generateCertificate(encodeBuffer.getInputStream());
-
-        String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
-
-        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
-        this.hash = new Asn1OctetString(this.digest).toString();
+                Base64.toBase64String(this.signature)).replace("{%verifySignatureOnly%}",
+                String.valueOf(verifySignatureOnly)).replace("{%originalContent%}",
+                Base64.toBase64String(this.data)).getBytes(StandardCharsets.UTF_8);
     }
 }
