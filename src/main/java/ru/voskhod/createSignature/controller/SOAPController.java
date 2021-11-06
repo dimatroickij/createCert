@@ -2,6 +2,7 @@ package ru.voskhod.createSignature.controller;
 
 import com.sun.org.apache.xml.internal.security.Init;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,7 +38,7 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку сертификата")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/certificate")
+    @PostMapping(value = "/certificate", consumes = "application/pkcs7-signature")
     public ResponseEntity<?> Certificate(@RequestBody byte[] data) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CertificateUtils.createVerifyCertificate(data));
@@ -45,7 +46,7 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку сертификата с отчётом")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/certificateWithReport")
+    @PostMapping(value = "/certificateWithReport", consumes = "application/pkcs7-signature")
     public ResponseEntity<?> CertificateWithReport(@RequestBody byte[] data) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CertificateUtils.createVerifyCertificateWithReport(data));
@@ -53,7 +54,7 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку сертификата с подписанным отчётом")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/certificateWithSignedReport")
+    @PostMapping(value = "/certificateWithSignedReport", consumes = "application/pkcs7-signature")
     public ResponseEntity<?> CertificateWithSignedReport(@RequestBody byte[] data) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CertificateUtils.createVerifyCertificateWithSignedReport(data));
@@ -63,9 +64,10 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_BES")
     public ResponseEntity<?> CAdES_BES(@RequestBody byte[] data,
-                                       @RequestParam(value = "alias") String alias,
-                                       @RequestParam(value = "password") String password,
-                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                       @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                       @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                       @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                               "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(CAdESUtils.createVerifyCAdES(data,
                 alias, password, null, false, CAdESType.CAdES_BES, isVerifySignatureOnly));
@@ -75,9 +77,10 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_BES_WithReport")
     public ResponseEntity<?> CAdES_BES_WithReport(@RequestBody byte[] data,
-                                                  @RequestParam(value = "alias") String alias,
-                                                  @RequestParam(value = "password") String password,
-                                                  @RequestParam(value = "isVerifySignatureOnly")
+                                                  @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                                  @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                                  @Parameter(description = "Проверять статус сертификата подписи " +
+                                                          "(false) или не проверять (true)") @RequestParam
                                                           boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, null, false,
@@ -88,10 +91,14 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_BES_WithSignedReport")
     public ResponseEntity<?> CAdES_BES_WithSignedReport(@RequestBody byte[] data,
-                                                        @RequestParam(value = "alias") String alias,
-                                                        @RequestParam(value = "password") String password,
-                                                        @RequestParam(value = "isVerifySignatureOnly")
-                                                                boolean isVerifySignatureOnly) throws Exception {
+                                                        @Parameter(description = "Alias контейнера")
+                                                        @RequestParam String alias,
+                                                        @Parameter(description = "Пароль от контейнера")
+                                                        @RequestParam String password,
+                                                        @Parameter(description = "Проверять статус сертификата " +
+                                                                "подписи (false) или не проверять (true)")
+                                                        @RequestParam boolean isVerifySignatureOnly)
+            throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, null, false,
                         CAdESType.CAdES_BES, isVerifySignatureOnly));
@@ -101,10 +108,11 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_T")
     public ResponseEntity<?> CAdES_T(@RequestBody byte[] data,
-                                     @RequestParam(value = "alias") String alias,
-                                     @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "tsp") String tsp,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                     @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                     @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                     @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                     @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                             "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false, CAdESType.CAdES_T,
@@ -115,10 +123,12 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_T_WithReport")
     public ResponseEntity<?> CAdES_T_WithReport(@RequestBody byte[] data,
-                                                @RequestParam(value = "alias") String alias,
-                                                @RequestParam(value = "password") String password,
-                                                @RequestParam(value = "tsp") String tsp,
-                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                                @Parameter(description = "Пароль от контейнера")
+                                                @RequestParam String password,
+                                                @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                                @Parameter(description = "Проверять статус сертификата подписи " +
+                                                        "(false) или не проверять (true)") @RequestParam
                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false,
@@ -129,10 +139,14 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_T_WithSignedReport")
     public ResponseEntity<?> CAdES_T_WithSignedReport(@RequestBody byte[] data,
-                                                      @RequestParam(value = "alias") String alias,
-                                                      @RequestParam(value = "password") String password,
-                                                      @RequestParam(value = "tsp") String tsp,
-                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                      @Parameter(description = "Alias контейнера")
+                                                      @RequestParam String alias,
+                                                      @Parameter(description = "Пароль от контейнера")
+                                                      @RequestParam String password,
+                                                      @Parameter(description = "Адрес TSP сервера")
+                                                      @RequestParam String tsp,
+                                                      @Parameter(description = "Проверять статус сертификата подписи " +
+                                                              "(false) или не проверять (true)") @RequestParam
                                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false,
@@ -143,10 +157,11 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_X")
     public ResponseEntity<?> CAdES_X(@RequestBody byte[] data,
-                                     @RequestParam(value = "alias") String alias,
-                                     @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "tsp") String tsp,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                     @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                     @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                     @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                     @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                             "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdES(data, alias, password, tsp, false,
@@ -157,10 +172,12 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_X_WithReport")
     public ResponseEntity<?> CAdES_X_WithReport(@RequestBody byte[] data,
-                                                @RequestParam(value = "alias") String alias,
-                                                @RequestParam(value = "password") String password,
-                                                @RequestParam(value = "tsp") String tsp,
-                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                                @Parameter(description = "Пароль от контейнера")
+                                                @RequestParam String password,
+                                                @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                                @Parameter(description = "Проверять статус сертификата подписи " +
+                                                        "(false) или не проверять (true)") @RequestParam
                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithReport(data, alias, password, tsp, false,
@@ -171,10 +188,14 @@ public class SOAPController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
     @PostMapping(value = "/CAdES_X_WithSignedReport")
     public ResponseEntity<?> CAdES_X_WithSignedReport(@RequestBody byte[] data,
-                                                      @RequestParam(value = "alias") String alias,
-                                                      @RequestParam(value = "password") String password,
-                                                      @RequestParam(value = "tsp") String tsp,
-                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                      @Parameter(description = "Alias контейнера")
+                                                      @RequestParam String alias,
+                                                      @Parameter(description = "Пароль от контейнера")
+                                                      @RequestParam String password,
+                                                      @Parameter(description = "Адрес TSP сервера")
+                                                      @RequestParam String tsp,
+                                                      @Parameter(description = "Проверять статус сертификата подписи " +
+                                                              "(false) или не проверять (true)") @RequestParam
                                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(CAdESUtils.createVerifyCAdESWithSignedReport(data, alias, password, tsp, false,
@@ -183,11 +204,12 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку XML-DSig")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/XMLDSig")
+    @PostMapping(value = "/XMLDSig", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XMLDSig(@RequestBody byte[] data,
-                                     @RequestParam(value = "alias") String alias,
-                                     @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                     @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                     @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                     @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                             "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(XMLUtils.createVerifyXMLSignature(data,
                 alias, password, isVerifySignatureOnly));
@@ -195,11 +217,13 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку XML-DSig с отчётом")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/XMLDSigWithReport")
+    @PostMapping(value = "/XMLDSigWithReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XMLDSigWithReport(@RequestBody byte[] data,
-                                               @RequestParam(value = "alias") String alias,
-                                               @RequestParam(value = "password") String password,
-                                               @RequestParam(value = "isVerifySignatureOnly")
+                                               @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                               @Parameter(description = "Пароль от контейнера")
+                                               @RequestParam String password,
+                                               @Parameter(description = "Проверять статус сертификата подписи " +
+                                                       "(false) или не проверять (true)") @RequestParam
                                                        boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XMLUtils.createVerifyXMLSignatureWithReport(data, alias, password, isVerifySignatureOnly));
@@ -207,11 +231,14 @@ public class SOAPController {
 
     @Operation(summary = "Создание запроса на проверку XML-DSig с подписанным отчётом")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @PostMapping(value = "/XMLDSigWithSignedReport")
+    @PostMapping(value = "/XMLDSigWithSignedReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XMLDSigWithSignedReport(@RequestBody byte[] data,
-                                                     @RequestParam(value = "alias") String alias,
-                                                     @RequestParam(value = "password") String password,
-                                                     @RequestParam(value = "isVerifySignatureOnly")
+                                                     @Parameter(description = "Alias контейнера")
+                                                     @RequestParam String alias,
+                                                     @Parameter(description = "Пароль от контейнера")
+                                                     @RequestParam String password,
+                                                     @Parameter(description = "Проверять статус сертификата подписи " +
+                                                             "(false) или не проверять (true)") @RequestParam
                                                              boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XMLUtils.createVerifyXMLSignatureWithSignedReport(data, alias, password, isVerifySignatureOnly));
@@ -221,10 +248,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_BES (проверяется как XMLDSig)")
     @PostMapping(value = "/XAdES_BES", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_BES(@RequestBody byte[] data,
-                                       @RequestParam(value = "alias") String alias,
-                                       @RequestParam(value = "password") String password,
-                                       @RequestParam(value = "ref_acct") String ref_acct,
-                                       @RequestParam(value = "isVerifySignatureOnly")
+                                       @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                       @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                       @Parameter(description = "ID подписываемого элемента")
+                                       @RequestParam String ref_acct,
+                                       @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                               "проверять (true)") @RequestParam
                                                boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdES(data, alias, password, null, ref_acct, XAdESType.XAdES_BES,
@@ -235,10 +264,14 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_BES с отчётом (проверяется как XMLDSig)")
     @PostMapping(value = "/XAdES_BES_WithReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_BESWithReport(@RequestBody byte[] data,
-                                                 @RequestParam(value = "alias") String alias,
-                                                 @RequestParam(value = "password") String password,
-                                                 @RequestParam(value = "ref_acct") String ref_acct,
-                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                 @Parameter(description = "Alias контейнера")
+                                                 @RequestParam String alias,
+                                                 @Parameter(description = "Пароль от контейнера")
+                                                 @RequestParam String password,
+                                                 @Parameter(description = "ID подписываемого элемента")
+                                                 @RequestParam String ref_acct,
+                                                 @Parameter(description = "Проверять статус сертификата подписи " +
+                                                         "(false) или не проверять (true)") @RequestParam
                                                          boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, null, ref_acct,
@@ -249,10 +282,14 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_BES с подписанным отчётом (проверяется как XMLDSig)")
     @PostMapping(value = "/XAdES_BES_WithSignedReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_BESWithSignedReport(@RequestBody byte[] data,
-                                                       @RequestParam(value = "alias") String alias,
-                                                       @RequestParam(value = "password") String password,
-                                                       @RequestParam(value = "ref_acct") String ref_acct,
-                                                       @RequestParam(value = "isVerifySignatureOnly")
+                                                       @Parameter(description = "Alias контейнера")
+                                                       @RequestParam String alias,
+                                                       @Parameter(description = "Пароль от контейнера")
+                                                       @RequestParam String password,
+                                                       @Parameter(description = "ID подписываемого элемента")
+                                                       @RequestParam String ref_acct,
+                                                       @Parameter(description = "Проверять статус сертификата " +
+                                                               "подписи (false) или не проверять (true)") @RequestParam
                                                                boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, null, ref_acct,
@@ -263,11 +300,13 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_T")
     @PostMapping(value = "/XAdES_T", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_T(@RequestBody byte[] data,
-                                     @RequestParam(value = "alias") String alias,
-                                     @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "tsp") String tsp,
-                                     @RequestParam(value = "ref_acct") String ref_acct,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                     @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                     @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                     @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                     @Parameter(description = "ID подписываемого элемента")
+                                     @RequestParam String ref_acct,
+                                     @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                             "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdES(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T,
@@ -278,11 +317,16 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_T")
     @PostMapping(value = "/XAdES_T_WithReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_T_WithReport(@RequestBody byte[] data,
-                                                @RequestParam(value = "alias") String alias,
-                                                @RequestParam(value = "password") String password,
-                                                @RequestParam(value = "tsp") String tsp,
-                                                @RequestParam(value = "ref_acct") String ref_acct,
-                                                @RequestParam(value = "isVerifySignatureOnly")
+                                                @Parameter(description = "Alias контейнера")
+                                                @RequestParam String alias,
+                                                @Parameter(description = "Пароль от контейнера")
+                                                @RequestParam String password,
+                                                @Parameter(description = "Адрес TSP сервера")
+                                                @RequestParam String tsp,
+                                                @Parameter(description = "ID подписываемого элемента")
+                                                @RequestParam String ref_acct,
+                                                @Parameter(description = "Проверять статус сертификата подписи " +
+                                                        "(false) или не проверять (true)") @RequestParam
                                                         boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdESWithReport(data, alias, password, tsp, ref_acct, XAdESType.XAdES_T,
@@ -293,11 +337,16 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку XAdES_T с подписанным отчётом")
     @PostMapping(value = "/XAdES_T_WithSignedReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> XAdES_T_WithSignedReport(@RequestBody byte[] data,
-                                                      @RequestParam(value = "alias") String alias,
-                                                      @RequestParam(value = "password") String password,
-                                                      @RequestParam(value = "tsp") String tsp,
-                                                      @RequestParam(value = "ref_acct") String ref_acct,
-                                                      @RequestParam(value = "isVerifySignatureOnly")
+                                                      @Parameter(description = "Alias контейнера")
+                                                      @RequestParam String alias,
+                                                      @Parameter(description = "Пароль от контейнера")
+                                                      @RequestParam String password,
+                                                      @Parameter(description = "Адрес TSP сервера")
+                                                      @RequestParam String tsp,
+                                                      @Parameter(description = "ID подписываемого элемента")
+                                                      @RequestParam String ref_acct,
+                                                      @Parameter(description = "Проверять статус сертификата подписи " +
+                                                              "(false) или не проверять (true)") @RequestParam
                                                               boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(XAdESUtils.createVerifyXAdESWithSignedReport(data, alias, password, tsp, ref_acct,
@@ -308,9 +357,10 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку WS-Security")
     @PostMapping(value = "/WSS", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> WSS(@RequestBody byte[] data,
-                                 @RequestParam(value = "alias") String alias,
-                                 @RequestParam(value = "password") String password,
-                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                 @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                 @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                 @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                         "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(WSSecurityUtils.createVerifyWSSSignature(data, alias, password, isVerifySignatureOnly));
@@ -320,9 +370,11 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку WS-Security с отчётом")
     @PostMapping(value = "/WSSWithReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> WSSWithReport(@RequestBody byte[] data,
-                                           @RequestParam(value = "alias") String alias,
-                                           @RequestParam(value = "password") String password,
-                                           @RequestParam(value = "isVerifySignatureOnly")
+                                           @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                           @Parameter(description = "Пароль от контейнера")
+                                           @RequestParam String password,
+                                           @Parameter(description = "Проверять статус сертификата подписи (false) " +
+                                                   "или не проверять (true)") @RequestParam
                                                    boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(WSSecurityUtils.createVerifyWSSSignatureWithReport(data, alias, password, isVerifySignatureOnly));
@@ -332,9 +384,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку WS-Security с подписанным отчётом")
     @PostMapping(value = "/WSSWithSignedReport", consumes = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> WSSWithSignedReport(@RequestBody byte[] data,
-                                                 @RequestParam(value = "alias") String alias,
-                                                 @RequestParam(value = "password") String password,
-                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                 @Parameter(description = "Alias контейнера")
+                                                 @RequestParam String alias,
+                                                 @Parameter(description = "Пароль от контейнера")
+                                                 @RequestParam String password,
+                                                 @Parameter(description = "Проверять статус сертификата подписи " +
+                                                         "(false) или не проверять (true)") @RequestParam
                                                          boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(WSSecurityUtils.createVerifyWSSSignatureWithSignedReport(data, alias, password,
@@ -345,10 +400,11 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку PAdES")
     @PostMapping(value = "/PAdES", consumes = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<?> PAdES(@RequestBody byte[] dataPDF,
-                                   @RequestParam(value = "alias") String alias,
-                                   @RequestParam(value = "password") String password,
-                                   @RequestParam(value = "tsp", required = false) String tsp,
-                                   @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                   @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                   @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                   @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                   @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                           "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(PAdESUtils.createVerifyPAdES(dataPDF, alias, password, tsp, isVerifySignatureOnly));
@@ -358,10 +414,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку PAdES с отчётом")
     @PostMapping(value = "/PAdESWithReport", consumes = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<?> PAdESWithReport(@RequestBody byte[] dataPDF,
-                                             @RequestParam(value = "alias") String alias,
-                                             @RequestParam(value = "password") String password,
-                                             @RequestParam(value = "tsp", required = false) String tsp,
-                                             @RequestParam(value = "isVerifySignatureOnly")
+                                             @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                             @Parameter(description = "Пароль от контейнера")
+                                             @RequestParam String password,
+                                             @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
+                                             @Parameter(description = "Проверять статус сертификата подписи (false) " +
+                                                     "или не проверять (true)") @RequestParam
                                                      boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(PAdESUtils.createVerifyPAdESWithReport(dataPDF, alias, password, tsp, isVerifySignatureOnly));
@@ -371,10 +429,14 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку PAdES с подписанным отчётом")
     @PostMapping(value = "/PAdESWithSignedReport", consumes = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<?> PAdESWithSignedReport(@RequestBody byte[] dataPDF,
-                                                   @RequestParam(value = "alias") String alias,
-                                                   @RequestParam(value = "password") String password,
-                                                   @RequestParam(value = "tsp", required = false) String tsp,
-                                                   @RequestParam(value = "isVerifySignatureOnly")
+                                                   @Parameter(description = "Alias контейнера")
+                                                   @RequestParam String alias,
+                                                   @Parameter(description = "Пароль от контейнера")
+                                                   @RequestParam String password,
+                                                   @Parameter(description = "Адрес TSP сервера")
+                                                   @RequestParam String tsp,
+                                                   @Parameter(description = "Проверять статус сертификата подписи " +
+                                                           "(false) или не проверять (true)") @RequestParam
                                                            boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(PAdESUtils.createVerifyPAdESWithSignedReport(dataPDF, alias, password, tsp,
@@ -385,9 +447,10 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку присоединённой CMS")
     @PostMapping(value = "/CMS")
     public ResponseEntity<?> CMS(@RequestBody byte[] data,
-                                 @RequestParam(value = "alias") String alias,
-                                 @RequestParam(value = "password") String password,
-                                 @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                 @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                 @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                 @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                         "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false,
@@ -400,9 +463,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку присоединённой CMS с отчётом")
     @PostMapping(value = "/CMSWithReport")
     public ResponseEntity<?> CMSWithReport(@RequestBody byte[] data,
-                                           @RequestParam(value = "alias") String alias,
-                                           @RequestParam(value = "password") String password,
-                                           @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                           @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                           @Parameter(description = "Пароль от контейнера")
+                                           @RequestParam String password,
+                                           @Parameter(description = "Проверять статус сертификата подписи (false) " +
+                                                   "или не проверять (true)")
+                                           @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false, false,
@@ -415,9 +481,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку присоединённой CMS с подписанным отчётом")
     @PostMapping(value = "/CMSWithSignedReport")
     public ResponseEntity<?> CMSWithSignedReport(@RequestBody byte[] data,
-                                                 @RequestParam(value = "alias") String alias,
-                                                 @RequestParam(value = "password") String password,
-                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                 @Parameter(description = "Alias контейнера")
+                                                 @RequestParam String alias,
+                                                 @Parameter(description = "Пароль от контейнера")
+                                                 @RequestParam String password,
+                                                 @Parameter(description = "Проверять статус сертификата подписи " +
+                                                         "(false) или не проверять (true)") @RequestParam
                                                          boolean isVerifySignatureOnly) throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, false, false,
@@ -430,9 +499,10 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS с хешем")
     @PostMapping(value = "/CMShash")
     public ResponseEntity<?> CMShash(@RequestBody byte[] data,
-                                     @RequestParam(value = "alias") String alias,
-                                     @RequestParam(value = "password") String password,
-                                     @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                     @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                     @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                     @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                             "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
@@ -445,9 +515,11 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS с хешем с отчётом")
     @PostMapping(value = "/CMShashWithReport")
     public ResponseEntity<?> CMShashWithReport(@RequestBody byte[] data,
-                                               @RequestParam(value = "alias") String alias,
-                                               @RequestParam(value = "password") String password,
-                                               @RequestParam(value = "isVerifySignatureOnly")
+                                               @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                               @Parameter(description = "Пароль от контейнера")
+                                               @RequestParam String password,
+                                               @Parameter(description = "Проверять статус сертификата подписи " +
+                                                       "(false) или не проверять (true)") @RequestParam
                                                        boolean isVerifySignatureOnly) throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
@@ -460,9 +532,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS с хешем с подписанным отчётом")
     @PostMapping(value = "/CMShashWithSignedReport")
     public ResponseEntity<?> CMShashWithSignedReport(@RequestBody byte[] data,
-                                                     @RequestParam(value = "alias") String alias,
-                                                     @RequestParam(value = "password") String password,
-                                                     @RequestParam(value = "isVerifySignatureOnly")
+                                                     @Parameter(description = "Alias контейнера")
+                                                     @RequestParam String alias,
+                                                     @Parameter(description = "Пароль от контейнера")
+                                                     @RequestParam String password,
+                                                     @Parameter(description = "Проверять статус сертификата подписи " +
+                                                             "(false) или не проверять (true)") @RequestParam
                                                              boolean isVerifySignatureOnly) throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
@@ -475,9 +550,10 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS")
     @PostMapping(value = "/CMSdetached")
     public ResponseEntity<?> CMSdetached(@RequestBody byte[] data,
-                                         @RequestParam(value = "alias") String alias,
-                                         @RequestParam(value = "password") String password,
-                                         @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                         @Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                         @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                         @Parameter(description = "Проверять статус сертификата подписи (false) или " +
+                                                 "не проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
@@ -490,9 +566,12 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS с отчётом")
     @PostMapping(value = "/CMSdetachedWithReport")
     public ResponseEntity<?> CMSdetachedWithReport(@RequestBody byte[] data,
-                                                   @RequestParam(value = "alias") String alias,
-                                                   @RequestParam(value = "password") String password,
-                                                   @RequestParam(value = "isVerifySignatureOnly")
+                                                   @Parameter(description = "Alias контейнера")
+                                                   @RequestParam String alias,
+                                                   @Parameter(description = "Пароль от контейнера")
+                                                   @RequestParam String password,
+                                                   @Parameter(description = "Проверять статус сертификата подписи " +
+                                                           "(false) или не проверять (true)") @RequestParam
                                                            boolean isVerifySignatureOnly) throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
@@ -505,10 +584,14 @@ public class SOAPController {
     @Operation(summary = "Создание запроса на проверку отсоединённой CMS с подписанным отчётом")
     @PostMapping(value = "/CMSdetachedWithSignedReport")
     public ResponseEntity<?> CMSdetachedWithSignedReport(@RequestBody byte[] data,
-                                                         @RequestParam(value = "alias") String alias,
-                                                         @RequestParam(value = "password") String password,
-                                                         @RequestParam(value = "isVerifySignatureOnly")
-                                                                 boolean isVerifySignatureOnly) throws Exception {
+                                                         @Parameter(description = "Alias контейнера")
+                                                         @RequestParam String alias,
+                                                         @Parameter(description = "Пароль от контейнера")
+                                                         @RequestParam String password,
+                                                         @Parameter(description = "Проверять статус сертификата " +
+                                                                 "подписи (false) или не проверять (true)")
+                                                         @RequestParam boolean isVerifySignatureOnly)
+            throws Exception {
 
         CMSUtils cmsUtils = new CMSUtils(data, alias, password, true, false,
                 false, false);
@@ -521,7 +604,8 @@ public class SOAPController {
             "Проверяется присланный пользователем штамп времени.")
     @PostMapping(value = "/TimeStamp")
     public ResponseEntity<?> TimeStamp(@RequestBody byte[] data,
-                                       @RequestParam(value = "isVerifySignatureOnly") boolean isVerifySignatureOnly)
+                                       @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
+                                               "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
             throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(TimeStampUtils.createVerifyTimeStamp(data, isVerifySignatureOnly));
@@ -532,7 +616,8 @@ public class SOAPController {
             "Проверяется присланный пользователем штамп времени.")
     @PostMapping(value = "/TimeStampWithReport")
     public ResponseEntity<?> TimeStampWithReport(@RequestBody byte[] data,
-                                                 @RequestParam(value = "isVerifySignatureOnly")
+                                                 @Parameter(description = "Проверять статус сертификата подписи " +
+                                                         "(false) или не проверять (true)") @RequestParam
                                                          boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(TimeStampUtils.createVerifyTimeStampWithReport(data, isVerifySignatureOnly));
@@ -543,8 +628,9 @@ public class SOAPController {
             "Проверяется присланный пользователем штамп времени.")
     @PostMapping(value = "/TimeStampWithSignedReport")
     public ResponseEntity<?> TimeStampWithSignedReport(@RequestBody byte[] data,
-                                                       @RequestParam(value = "isVerifySignatureOnly")
-                                                               boolean isVerifySignatureOnly) throws Exception {
+                                                       @Parameter(description = "Проверять статус сертификата " +
+                                                               "подписи (false) или не проверять (true)")
+                                                       @RequestParam boolean isVerifySignatureOnly) throws Exception {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML)
                 .body(TimeStampUtils.createVerifyTimeStampWithSignedReport(data, isVerifySignatureOnly));
     }

@@ -1,6 +1,7 @@
 package ru.voskhod.createSignature.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -66,7 +67,7 @@ public class CertificateController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json",
             schema = @Schema(implementation = CertificateDto.class))})})
     @GetMapping("/{id}")
-    public CertificateDto get(@PathVariable String id) throws CertificateException, IOException,
+    public CertificateDto get(@Parameter(description = "Alias контейнера") @PathVariable String id) throws CertificateException, IOException,
             NoSuchAlgorithmException, KeyStoreException, ParseException {
         hdImageStore.load(null, null);
         X509Certificate certificate = (X509Certificate) hdImageStore.getCertificate(id);
