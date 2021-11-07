@@ -17,6 +17,7 @@
         <java.version>11</java.version>
     </properties>
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -24,6 +25,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -37,7 +43,6 @@
             <artifactId>wss4j</artifactId>
             <version>1.6.19</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -55,12 +60,12 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.5.11</version>
+            <version>1.5.12</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-data-rest</artifactId>
-            <version>1.5.11</version>
+            <version>1.5.12</version>
         </dependency>
     </dependencies>
 
@@ -69,6 +74,23 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.5.6</version>
+                <configuration>
+                    <mainClass>ru.voskhod.createSignature.CreateSignatureApplication</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                    <source>11</source>
+                    <target>11</target>
+                    <debug>true</debug>
+                    <debuglevel>lines,vars,source</debuglevel>
+                </configuration>
             </plugin>
         </plugins>
     </build>

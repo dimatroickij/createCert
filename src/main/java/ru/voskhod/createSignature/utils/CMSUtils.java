@@ -1,6 +1,6 @@
 package ru.voskhod.createSignature.utils;
 
-import CMS_samples.CMStools;
+
 import com.objsys.asn1j.runtime.*;
 import org.bouncycastle.util.encoders.Base64;
 import ru.CryptoPro.JCP.ASN.CertificateExtensions.GeneralName;
@@ -11,8 +11,10 @@ import ru.CryptoPro.JCP.JCP;
 import ru.CryptoPro.JCP.params.OID;
 import ru.CryptoPro.JCP.tools.AlgorithmUtility;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.MessageDigest;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
@@ -26,6 +28,12 @@ public class CMSUtils {
     boolean detached;
     String hash;
     byte[] digest;
+
+    public static final String STR_CMS_OID_SIGNED = "1.2.840.113549.1.7.2";
+    public static final String STR_CMS_OID_DATA = "1.2.840.113549.1.7.1";
+    public static final String STR_CMS_OID_DIGEST_ATTR = "1.2.840.113549.1.9.4";
+    public static final String STR_CMS_OID_CONT_TYP_ATTR = "1.2.840.113549.1.9.3";
+    public static final String STR_CMS_OID_SIGN_TYM_ATTR = "1.2.840.113549.1.9.5";
 
     public static String VerifyCMSSignature = "<soapenv:Envelope " +
             "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:esv=\"http://esv.server.rt.ru\">\n" +
@@ -159,8 +167,20 @@ public class CMSUtils {
 
         String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
 
-        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
+        this.digest = digestm(this.data, digestOid, JCP.PROVIDER_NAME);
         this.hash = new Asn1OctetString(this.digest).toString();
+    }
+
+    public static byte[] digestm(byte[] var0, String var1, String var2) throws Exception {
+        ByteArrayInputStream var3 = new ByteArrayInputStream(var0);
+        MessageDigest var4 = var2 != null ? MessageDigest.getInstance(var1, var2) : MessageDigest.getInstance(var1);
+        DigestInputStream var5 = new DigestInputStream(var3, var4);
+
+        while(var5.available() != 0) {
+            var5.read();
+        }
+
+        return var4.digest();
     }
 
     public CMSUtils(byte[] signature, byte[] data) throws Exception {
@@ -183,7 +203,7 @@ public class CMSUtils {
 
         String digestOid = AlgorithmUtility.keyAlgToDigestOid(cert.getPublicKey().getAlgorithm());
 
-        this.digest = CMStools.digestm(this.data, digestOid, JCP.PROVIDER_NAME);
+        this.digest = digestm(this.data, digestOid, JCP.PROVIDER_NAME);
         this.hash = new Asn1OctetString(this.digest).toString();
     }
 
@@ -198,7 +218,7 @@ public class CMSUtils {
         ContentInfo all = new ContentInfo();
         SignedData cms = new SignedData();
 
-        all.contentType = new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_SIGNED).value);
+        all.contentType = new Asn1ObjectIdentifier(new OID(STR_CMS_OID_SIGNED).value);
         all.content = cms;
         cms.version = new CMSVersion(1);
 
@@ -211,11 +231,11 @@ public class CMSUtils {
 
         if (detached) {
             cms.encapContentInfo = new EncapsulatedContentInfo(
-                    new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_DATA).value), null);
+                    new Asn1ObjectIdentifier(new OID(STR_CMS_OID_DATA).value), null);
         } // if
         else {
             cms.encapContentInfo = new EncapsulatedContentInfo(new Asn1ObjectIdentifier(
-                    new OID(CMStools.STR_CMS_OID_DATA).value), new Asn1OctetString(data));
+                    new OID(STR_CMS_OID_DATA).value), new Asn1OctetString(data));
         } // else
 
         // certificate
@@ -258,13 +278,13 @@ public class CMSUtils {
 
         //-message digest
         cms.signerInfos.elements[0].signedAttrs.elements[k] =
-                new Attribute(new OID(CMStools.STR_CMS_OID_DIGEST_ATTR).value, new Attribute_values(1));
+                new Attribute(new OID(STR_CMS_OID_DIGEST_ATTR).value, new Attribute_values(1));
 
         if (cms.encapContentInfo.eContent != null) {
-            digest = CMStools.digestm(cms.encapContentInfo.eContent.value, digestOid, JCP.PROVIDER_NAME);
+            digest = digestm(cms.encapContentInfo.eContent.value, digestOid, JCP.PROVIDER_NAME);
         } // if
         else if (data != null) {
-            digest = CMStools.digestm(data, digestOid, JCP.PROVIDER_NAME);
+            digest = digestm(data, digestOid, JCP.PROVIDER_NAME);
         } // else
         else {
             throw new Exception("No content");
@@ -278,8 +298,8 @@ public class CMSUtils {
         if (isContentType) {
             k += 1;
             cms.signerInfos.elements[0].signedAttrs.elements[k] = new Attribute(
-                    new OID(CMStools.STR_CMS_OID_CONT_TYP_ATTR).value, new Attribute_values(1));
-            final Asn1Type conttype = new Asn1ObjectIdentifier(new OID(CMStools.STR_CMS_OID_DATA).value);
+                    new OID(STR_CMS_OID_CONT_TYP_ATTR).value, new Attribute_values(1));
+            final Asn1Type conttype = new Asn1ObjectIdentifier(new OID(STR_CMS_OID_DATA).value);
             cms.signerInfos.elements[0].signedAttrs.elements[k].values.elements[0] = conttype;
         }
 
@@ -287,7 +307,7 @@ public class CMSUtils {
         if (isTime) {
             k += 1;
             cms.signerInfos.elements[0].signedAttrs.elements[k] =
-                    new Attribute(new OID(CMStools.STR_CMS_OID_SIGN_TYM_ATTR).value, new Attribute_values(1));
+                    new Attribute(new OID(STR_CMS_OID_SIGN_TYM_ATTR).value, new Attribute_values(1));
             final Time time = new Time();
             final Asn1UTCTime UTCTime = new Asn1UTCTime();
             //текущая дата с календаря
@@ -308,7 +328,7 @@ public class CMSUtils {
                     new DigestAlgorithmIdentifier(new OID(digestOid).value);
 
             // Хеш сертификата ключа подписи.
-            final CertHash certHash = new CertHash(CMStools.digestm(cert.getEncoded(), digestOid, JCP.PROVIDER_NAME));
+            final CertHash certHash = new CertHash(digestm(cert.getEncoded(), digestOid, JCP.PROVIDER_NAME));
 
             // Issuer name из сертификата ключа подписи.
             GeneralName generalName = new GeneralName();
