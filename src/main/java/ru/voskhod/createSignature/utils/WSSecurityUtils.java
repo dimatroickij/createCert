@@ -41,10 +41,7 @@ public class WSSecurityUtils {
 
     // TODO
     public static byte[] createWSS(byte[] data, String alias, String password) throws Exception {
-        return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<PatientRecord>" +
-                "<Name>John Doe</Name>" +
-                "</PatientRecord>").getBytes(StandardCharsets.UTF_8);
+        return data;
     }
 
     public static byte[] createVerifyWSSSignature(byte[] data, boolean verifySignatureOnly) throws Exception {

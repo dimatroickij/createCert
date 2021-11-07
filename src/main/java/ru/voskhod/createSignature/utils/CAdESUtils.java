@@ -82,9 +82,10 @@ public class CAdESUtils {
         return signatureStream.toByteArray();
     }
 
-    public static byte[] createVerifyCAdES(byte[] data, boolean verifySignatureOnly) throws Exception {
-        return createVerifyCAdES(data, null, null, null, false,
-                null, verifySignatureOnly, true);
+    public static byte[] createVerifyCAdES(byte[] data, Integer typeCAdES, boolean verifySignatureOnly)
+            throws Exception {
+        return createVerifyCAdES(data, null, null, null, false, typeCAdES,
+                verifySignatureOnly, true);
     }
 
     public static byte[] createVerifyCAdES(byte[] data, String alias, String password, String tsp, boolean detached,
@@ -108,8 +109,9 @@ public class CAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyCAdESWithReport(byte[] data, boolean verifySignatureOnly) throws Exception {
-        return createVerifyCAdESWithReport(data, null, null, null, false, null,
+    public static byte[] createVerifyCAdESWithReport(byte[] data, Integer typeCAdES, boolean verifySignatureOnly)
+            throws Exception {
+        return createVerifyCAdESWithReport(data, null, null, null, false, typeCAdES,
                 verifySignatureOnly, true);
     }
 
@@ -136,9 +138,10 @@ public class CAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyCAdESWithSignedReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyCAdESWithSignedReport(byte[] data, Integer typeCAdES, boolean verifySignatureOnly)
+            throws Exception {
         return createVerifyCAdESWithSignedReport(data, null, null, null, false,
-                null, verifySignatureOnly, true);
+                typeCAdES, verifySignatureOnly, true);
     }
 
     public static byte[] createVerifyCAdESWithSignedReport(byte[] data, String alias, String password, String tsp,
