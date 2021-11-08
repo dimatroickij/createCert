@@ -71,6 +71,19 @@ public class XMLUtils {
 
         String digestMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:" + digestAlgorithm;
 
+        // if (algoOid == "1.2.643.7.1.1.1.1") {   // алгоритм подписи ГОСТ Р 34.10-2012 с ключом 256 бит
+        //        signMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-256";
+        //        digestMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34112012-256";
+        //    }
+        //    else if (algoOid == "1.2.643.7.1.1.1.2") {   // алгоритм подписи ГОСТ Р 34.10-2012 с ключом 512 бит
+        //        signMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-512";
+        //        digestMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34112012-512";
+        //    }
+        //    else if (algoOid == "1.2.643.2.2.19") {  // алгоритм ГОСТ Р 34.10-2001
+        //        signMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102001-gostr3411";
+        //        digestMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr3411";
+        //    }
+
         String signedAlgorithm = pubKeyAlg.toLowerCase().replace("gost", "gostr").
                 replaceFirst("_", "").split("_")[0];
         final String signMethod = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:" +

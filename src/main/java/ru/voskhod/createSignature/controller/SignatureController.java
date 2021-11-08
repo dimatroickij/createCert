@@ -422,7 +422,7 @@ public class SignatureController {
             FileWSS.close();
             FileOutputStream SoapWSS = new FileOutputStream(path + "\\SOAP\\WS-Security.xml");
             SoapWSS.write(WSSecurityUtils.createVerifyWSSSignature(WSS, false));
-            SoapPAdES.close();
+            SoapWSS.close();
             FileOutputStream SoapWSSWithReport = new FileOutputStream(path +
                     "\\SOAP\\WS-Security WithReport.xml");
             SoapWSSWithReport.write(WSSecurityUtils.createVerifyWSSSignatureWithReport(WSS, false));
