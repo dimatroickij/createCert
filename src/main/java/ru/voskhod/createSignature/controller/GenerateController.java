@@ -1,5 +1,7 @@
 package ru.voskhod.createSignature.controller;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,13 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.CryptoPro.CAdES.CAdESType;
 import ru.CryptoPro.XAdES.XAdESType;
-import ru.voskhod.createSignature.utils.CAdESUtils;
-import ru.voskhod.createSignature.utils.CMSUtils;
-import ru.voskhod.createSignature.utils.XAdESUtils;
-import ru.voskhod.createSignature.utils.XMLUtils;
+import ru.voskhod.createSignature.utils.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
@@ -42,7 +43,7 @@ public class GenerateController {
                                  @Parameter(description = "CMS отсоединённая?") @RequestParam boolean isCMSdet,
                                  @Parameter(description = "CAdES?") @RequestParam boolean isCAdES,
                                  @Parameter(description = "XMLDSig?") @RequestParam boolean isXMLDSig,
-                                 @Parameter(description = "XAdES-T?") @RequestParam boolean isXAdES,
+                                 @Parameter(description = "XAdES?") @RequestParam boolean isXAdES,
                                  @Parameter(description = "PAdES?") @RequestParam boolean isPAdES) throws Exception {
         Random random = new Random();
         File directory = new File(path);
@@ -51,14 +52,14 @@ public class GenerateController {
         }
         int i = 0;
         if (directory.isDirectory()) {
-            byte[] data = new byte[(size) * 1024 - 97];
-            String xml = "<?xml version=\"1.0\"?>\n" +
-                    "<PatientRecord>\n" +
-                    "    <Account Id=\"acct\">{%data%}</Account>\n" +
-                    "</PatientRecord>\n";
-
-            random.nextBytes(data);
             for (i = start; i < count + start; i++) {
+                byte[] data = new byte[(size) * 1024];
+                String xml = "<?xml version=\"1.0\"?>\n" +
+                        "<PatientRecord>\n" +
+                        "    <Account Id=\"acct\">{%data%}</Account>\n" +
+                        "</PatientRecord>\n";
+                byte[] xmlByte = xml.replace("{%data%}", Base64.toBase64String(data)).getBytes(StandardCharsets.UTF_8);
+                random.nextBytes(data);
                 if (isCMSatt) {
                     CMSUtils CMSatt = new CMSUtils(data, alias, password, false, false, false, false);
                     FileOutputStream SoapCMSatt = new FileOutputStream(path + "\\VerifyCMSSignature_simple_" + String.valueOf(i) + ".xml");
@@ -99,7 +100,7 @@ public class GenerateController {
 
                 // Добавление сгенерированных данных в XML не работает
                 if (isXMLDSig) {
-                    byte[] XMLDSig = XMLUtils.createXMLDSig(xml.replace("{%data%}", Base64.toBase64String(data)).getBytes(StandardCharsets.UTF_8), alias, password);
+                    byte[] XMLDSig = XMLUtils.createXMLDSig(xmlByte, alias, password);
                     FileOutputStream SoapXML_DSig = new FileOutputStream(path + "\\VerifyXMLSignature_simple_" + String.valueOf(i) + ".xml");
                     SoapXML_DSig.write(XMLUtils.createVerifyXMLSignature(XMLDSig, false));
                     SoapXML_DSig.close();
@@ -112,19 +113,39 @@ public class GenerateController {
 
                 // Добавление сгенерированных данных в XML не работает
                 if (isXAdES) {
-                    byte[] XAdES_T = XAdESUtils.createXAdES(xml.replace("{%data%}", Base64.toBase64String(data)).getBytes(StandardCharsets.UTF_8), alias, password, tsp, "acct", XAdESType.XAdES_T);
-                    FileOutputStream SoapXAdES_T = new FileOutputStream(path + "\\VerifyXAdES_simple_" + String.valueOf(i) + ".xml");
-                    SoapXAdES_T.write(XAdESUtils.createVerifyXAdES(XAdES_T, XAdESType.XAdES_T, false));
-                    SoapXAdES_T.close();
-                    FileOutputStream SoapXAdES_T_WithSignedReport = new FileOutputStream(path +
+                    byte[] XAdES = XAdESUtils.createXAdES(xmlByte, alias, password, tsp, "acct", XAdESType.XAdES_T);
+                    FileOutputStream SoapXAdES = new FileOutputStream(path + "\\VerifyXAdES_simple_" + String.valueOf(i) + ".xml");
+                    SoapXAdES.write(XAdESUtils.createVerifyXAdES(XAdES, XAdESType.XAdES_T, false));
+                    SoapXAdES.close();
+                    FileOutputStream SoapXAdES_WithSignedReport = new FileOutputStream(path +
                             "\\VerifyXAdES_WithSignedReport_" + String.valueOf(i) + ".xml");
-                    SoapXAdES_T_WithSignedReport.write(XAdESUtils.createVerifyXAdESWithSignedReport(XAdES_T, XAdESType.XAdES_T,
+                    SoapXAdES_WithSignedReport.write(XAdESUtils.createVerifyXAdESWithSignedReport(XAdES, XAdESType.XAdES_T,
                             false));
-                    SoapXAdES_T_WithSignedReport.close();
+                    SoapXAdES_WithSignedReport.close();
                 }
 
-                // TODO
-                // PAdES
+                Document document = new Document();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                PdfWriter.getInstance(document, outputStream);
+
+                document.open();
+                Font font = FontFactory.getFont(FontFactory.COURIER, 16, BaseColor.BLACK);
+                byte[] array = new byte[size * 1024]; // length is bounded by 7
+                Chunk chunk = new Chunk(new String(array, StandardCharsets.UTF_8), font);
+                document.add(chunk);
+                document.close();
+
+                if (isPAdES) {
+                    byte[] PAdES = PAdESUtils.createPAdES (outputStream.toByteArray(), alias, password, tsp);
+                    FileOutputStream SoapPAdES = new FileOutputStream(path + "\\VerifyPAdES_simple_" + String.valueOf(i) + ".xml");
+                    SoapPAdES.write(PAdESUtils.createVerifyPAdES(PAdES, false));
+                    SoapPAdES.close();
+                    FileOutputStream SoapPAdES_WithSignedReport = new FileOutputStream(path +
+                            "\\VerifyPAdES_WithSignedReport_" + String.valueOf(i) + ".xml");
+                    SoapPAdES_WithSignedReport.write(PAdESUtils.createVerifyPAdESWithSignedReport(PAdES,
+                            false));
+                    SoapPAdES_WithSignedReport.close();
+                }
 
             }
             return ResponseEntity.ok().body("Файлы сохранены в указанную папку");
