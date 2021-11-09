@@ -112,9 +112,9 @@ public class XAdESUtils {
         return signatureStream.toByteArray();
     }
 
-    public static byte[] createVerifyXAdES(byte[] data, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdES(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
         return createVerifyXAdES(data, null, null, null, null,
-                null, verifySignatureOnly, true);
+                TypeXAdES, verifySignatureOnly, true);
     }
 
     public static byte[] createVerifyXAdES(byte[] data, String alias, String password, String tsp, String ref_acct,
@@ -138,9 +138,9 @@ public class XAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyXAdESWithReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdESWithReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
         return createVerifyXAdESWithReport(data, null, null, null, null,
-                null, verifySignatureOnly, true);
+                TypeXAdES, verifySignatureOnly, true);
     }
 
     public static byte[] createVerifyXAdESWithReport(byte[] data, String alias, String password, String tsp,
@@ -166,9 +166,9 @@ public class XAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyXAdESWithSignedReport(byte[] data, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdESWithSignedReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
         return createVerifyXAdESWithSignedReport(data, null, null, null, null,
-                null, verifySignatureOnly, true);
+                TypeXAdES, verifySignatureOnly, true);
     }
 
     public static byte[] createVerifyXAdESWithSignedReport(byte[] data, String alias, String password, String tsp,

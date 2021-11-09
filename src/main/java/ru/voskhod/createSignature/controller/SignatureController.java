@@ -234,7 +234,7 @@ public class SignatureController {
             SoapCMSattWithSignedReport.close();
 
             // CMS отсоединённая
-            CMSUtils CMSdet = new CMSUtils(text, alias, password, false, false, false,
+            CMSUtils CMSdet = new CMSUtils(text, alias, password, true, false, false,
                     false);
             FileOutputStream FileCMSdet = new FileOutputStream(path + "\\CMS (det.).sig");
             FileCMSdet.write(CMSdet.getSignature());
@@ -345,16 +345,15 @@ public class SignatureController {
             FileXML_DSig.write(XML_DSig);
             FileXML_DSig.close();
             FileOutputStream SoapXML_DSig = new FileOutputStream(path + "\\SOAP\\XML-DSig.xml");
-            SoapXML_DSig.write(CAdESUtils.createVerifyCAdES(CAdES_X, CAdESType.CAdES_X_Long_Type_1,
-                    false));
+            SoapXML_DSig.write(XMLUtils.createVerifyXMLSignature(XML_DSig, false));
             SoapXML_DSig.close();
             FileOutputStream SoapXML_DSigWithReport = new FileOutputStream(path +
                     "\\SOAP\\XML-DSig WithReport.xml");
-            SoapXML_DSigWithReport.write(XMLUtils.createVerifyXMLSignature(XML_DSig, false));
+            SoapXML_DSigWithReport.write(XMLUtils.createVerifyXMLSignatureWithReport(XML_DSig, false));
             SoapXML_DSigWithReport.close();
             FileOutputStream SoapXML_DSigWithSignedReport = new FileOutputStream(path +
                     "\\SOAP\\XML-DSig WithSignedReport.xml");
-            SoapXML_DSigWithSignedReport.write(XMLUtils.createVerifyXMLSignatureWithReport(XML_DSig,
+            SoapXML_DSigWithSignedReport.write(XMLUtils.createVerifyXMLSignatureWithSignedReport(XML_DSig,
                     false));
             SoapXML_DSigWithSignedReport.close();
 
@@ -383,15 +382,16 @@ public class SignatureController {
             FileXAdES_T.write(XAdES_T);
             FileXAdES_T.close();
             FileOutputStream SoapXAdES_T = new FileOutputStream(path + "\\SOAP\\XAdES-T.xml");
-            SoapXAdES_T.write(XAdESUtils.createVerifyXAdES(XAdES_T, false));
+            SoapXAdES_T.write(XAdESUtils.createVerifyXAdES(XAdES_T, XAdESType.XAdES_T, false));
             SoapXAdES_T.close();
             FileOutputStream SoapXAdES_T_WithReport = new FileOutputStream(path +
                     "\\SOAP\\XAdES-T WithReport.xml");
-            SoapXAdES_T_WithReport.write(XAdESUtils.createVerifyXAdESWithReport(XAdES_T, false));
+            SoapXAdES_T_WithReport.write(XAdESUtils.createVerifyXAdESWithReport(XAdES_T, XAdESType.XAdES_T,
+                    false));
             SoapXAdES_T_WithReport.close();
             FileOutputStream SoapXAdES_T_WithSignedReport = new FileOutputStream(path +
                     "\\SOAP\\XAdES-T WithSignedReport.xml");
-            SoapXAdES_T_WithSignedReport.write(XAdESUtils.createVerifyXAdESWithSignedReport(XAdES_T,
+            SoapXAdES_T_WithSignedReport.write(XAdESUtils.createVerifyXAdESWithSignedReport(XAdES_T, XAdESType.XAdES_T,
                     false));
             SoapXAdES_T_WithSignedReport.close();
 
