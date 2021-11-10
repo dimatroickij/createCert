@@ -78,7 +78,8 @@ public class SOAPController {
     @PostMapping(value = "/CAdES_BES_WithReport")
     public ResponseEntity<?> CAdES_BES_WithReport(@RequestBody byte[] data,
                                                   @Parameter(description = "Alias контейнера") @RequestParam String alias,
-                                                  @Parameter(description = "Пароль от контейнера") @RequestParam String password,
+                                                  @Parameter(description = "Пароль от контейнера")
+                                                  @RequestParam String password,
                                                   @Parameter(description = "Проверять статус сертификата подписи " +
                                                           "(false) или не проверять (true)") @RequestParam
                                                           boolean isVerifySignatureOnly) throws Exception {
@@ -600,9 +601,8 @@ public class SOAPController {
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @Operation(summary = "Создание запроса на проверку штампа времени." +
-            "Проверяется присланный пользователем штамп времени.")
-    @PostMapping(value = "/TimeStamp")
+    @Operation(summary = "Создание запроса на проверку штампа времени")
+    @PostMapping(value = "/TimeStamp", consumes = "text/plain")
     public ResponseEntity<?> TimeStamp(@RequestBody byte[] data,
                                        @Parameter(description = "Проверять статус сертификата подписи (false) или не " +
                                                "проверять (true)") @RequestParam boolean isVerifySignatureOnly)
@@ -612,9 +612,8 @@ public class SOAPController {
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @Operation(summary = "Создание запроса на проверку штампа времени с отчётом. " +
-            "Проверяется присланный пользователем штамп времени.")
-    @PostMapping(value = "/TimeStampWithReport")
+    @Operation(summary = "Создание запроса на проверку штампа времени с отчётом")
+    @PostMapping(value = "/TimeStampWithReport", consumes = "text/plain")
     public ResponseEntity<?> TimeStampWithReport(@RequestBody byte[] data,
                                                  @Parameter(description = "Проверять статус сертификата подписи " +
                                                          "(false) или не проверять (true)") @RequestParam
@@ -624,9 +623,8 @@ public class SOAPController {
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/xml")})})
-    @Operation(summary = "Создание запроса на проверку штампа времени с подписанным отчётом. " +
-            "Проверяется присланный пользователем штамп времени.")
-    @PostMapping(value = "/TimeStampWithSignedReport")
+    @Operation(summary = "Создание запроса на проверку штампа времени с подписанным отчётом")
+    @PostMapping(value = "/TimeStampWithSignedReport", consumes = "text/plain")
     public ResponseEntity<?> TimeStampWithSignedReport(@RequestBody byte[] data,
                                                        @Parameter(description = "Проверять статус сертификата " +
                                                                "подписи (false) или не проверять (true)")

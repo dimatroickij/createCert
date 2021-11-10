@@ -112,7 +112,8 @@ public class XAdESUtils {
         return signatureStream.toByteArray();
     }
 
-    public static byte[] createVerifyXAdES(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdES(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly)
+            throws Exception {
         return createVerifyXAdES(data, null, null, null, null,
                 TypeXAdES, verifySignatureOnly, true);
     }
@@ -138,7 +139,8 @@ public class XAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyXAdESWithReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdESWithReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly)
+            throws Exception {
         return createVerifyXAdESWithReport(data, null, null, null, null,
                 TypeXAdES, verifySignatureOnly, true);
     }
@@ -166,7 +168,8 @@ public class XAdESUtils {
                     .getBytes(StandardCharsets.UTF_8);
     }
 
-    public static byte[] createVerifyXAdESWithSignedReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly) throws Exception {
+    public static byte[] createVerifyXAdESWithSignedReport(byte[] data, Integer TypeXAdES, boolean verifySignatureOnly)
+            throws Exception {
         return createVerifyXAdESWithSignedReport(data, null, null, null, null,
                 TypeXAdES, verifySignatureOnly, true);
     }

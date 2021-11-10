@@ -26,8 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.*;
 
 @RestController
@@ -37,7 +35,7 @@ import java.security.*;
 public class SignatureController {
 
     public SignatureController() {
-        JCPXMLDSigInit.init();  //без него XAdES не создаётся
+        JCPXMLDSigInit.init();
         System.setProperty("com.sun.security.enableCRLDP", "true");
         System.setProperty("com.ibm.security.enableCRLDP", "true");
         System.setProperty("ocsp.enable", "true");
@@ -69,8 +67,8 @@ public class SignatureController {
                           @Parameter(description = "Пароль от контейнера") @RequestParam String password,
                           @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
                           @Parameter(description = "Тип подписи: отсоединённая (true) или присоединённая (false)")
-                          @RequestParam boolean detached) throws Exception {
-        return CAdESUtils.createCAdES(data, alias, password, tsp, detached, CAdESType.CAdES_T);
+                          @RequestParam boolean isDetached) throws Exception {
+        return CAdESUtils.createCAdES(data, alias, password, tsp, isDetached, CAdESType.CAdES_T);
     }
 
     @Operation(summary = "Создание подписи CAdES-X-Long-Type 1")
@@ -82,8 +80,8 @@ public class SignatureController {
                           @Parameter(description = "Пароль от контейнера") @RequestParam String password,
                           @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp,
                           @Parameter(description = "Тип подписи: отсоединённая (true) или присоединённая (false)")
-                          @RequestParam boolean detached) throws Exception {
-        return CAdESUtils.createCAdES(data, alias, password, tsp, detached, CAdESType.CAdES_X_Long_Type_1);
+                          @RequestParam boolean isDetached) throws Exception {
+        return CAdESUtils.createCAdES(data, alias, password, tsp, isDetached, CAdESType.CAdES_X_Long_Type_1);
     }
 
     @Operation(summary = "Создание подписи XML-DSig")
@@ -154,18 +152,27 @@ public class SignatureController {
                                  @Parameter(description = "Alias контейнера") @RequestParam String alias,
                                  @Parameter(description = "Пароль от контейнера") @RequestParam String password,
                                  @Parameter(description = "Тип подписи: отсоединённая (true) или " +
-                                         "присоединённая (false)") @RequestParam boolean detached) throws Exception {
+                                         "присоединённая (false)") @RequestParam boolean isDetached) throws Exception {
 
         // Добавление или исключение подписанных атрибутов
         boolean isContentType = false;
         boolean isTime = false;
         boolean isSigningCertificateV2 = false;
-        CMSUtils cmsUtils = new CMSUtils(data, alias, password, detached, isContentType, isTime,
+        CMSUtils cmsUtils = new CMSUtils(data, alias, password, isDetached, isContentType, isTime,
                 isSigningCertificateV2);
         byte[] signature = cmsUtils.getSignature();
         byte[] digest = cmsUtils.getDigest();
         String hash = cmsUtils.getHash();
         return ResponseEntity.status(HttpStatus.OK).header("Hash-Data", hash).body(signature);
+    }
+
+    @ApiResponses(value = {@ApiResponse(responseCode = "200")})
+    @Operation(summary = "Создание штампа времени")
+    @PostMapping(value = "/Timestamp", consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> Timestamp(@Parameter(description = "Alias контейнера") @RequestParam String alias,
+                                       @Parameter(description = "Адрес TSP сервера") @RequestParam String tsp)
+            throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(TimeStampUtils.createTimeStamp(alias, tsp));
     }
 
     @Operation(summary = "Создание подписей всех типов")
@@ -226,10 +233,12 @@ public class SignatureController {
             FileOutputStream SoapCMSatt = new FileOutputStream(path + "\\SOAP\\CMS (att.).xml");
             SoapCMSatt.write(CMSatt.createVerifyCMS(false));
             SoapCMSatt.close();
-            FileOutputStream SoapCMSattWithReport = new FileOutputStream(path + "\\SOAP\\CMS (att.) WithReport.xml");
+            FileOutputStream SoapCMSattWithReport = new FileOutputStream(path +
+                    "\\SOAP\\CMS (att.) WithReport.xml");
             SoapCMSattWithReport.write(CMSatt.createVerifyCMSWithReport(false));
             SoapCMSattWithReport.close();
-            FileOutputStream SoapCMSattWithSignedReport = new FileOutputStream(path + "\\SOAP\\CMS (att.) WithSignedReport.xml");
+            FileOutputStream SoapCMSattWithSignedReport = new FileOutputStream(path +
+                    "\\SOAP\\CMS (att.) WithSignedReport.xml");
             SoapCMSattWithSignedReport.write(CMSatt.createVerifyCMSWithSignedReport(false));
             SoapCMSattWithSignedReport.close();
 
@@ -242,19 +251,23 @@ public class SignatureController {
             FileOutputStream SoapCMSdet = new FileOutputStream(path + "\\SOAP\\CMS (det.).xml");
             SoapCMSdet.write(CMSdet.createVerifyCMSDetached(false));
             SoapCMSdet.close();
-            FileOutputStream SoapCMSdetWithReport = new FileOutputStream(path + "\\SOAP\\CMS (det.) WithReport.xml");
+            FileOutputStream SoapCMSdetWithReport = new FileOutputStream(path +
+                    "\\SOAP\\CMS (det.) WithReport.xml");
             SoapCMSdetWithReport.write(CMSdet.createVerifyCMSDetachedWithReport(false));
             SoapCMSdetWithReport.close();
-            FileOutputStream SoapCMSdetWithSignedReport = new FileOutputStream(path + "\\SOAP\\CMS (det.) WithSignedReport.xml");
+            FileOutputStream SoapCMSdetWithSignedReport = new FileOutputStream(path +
+                    "\\SOAP\\CMS (det.) WithSignedReport.xml");
             SoapCMSdetWithSignedReport.write(CMSdet.createVerifyCMSDetachedWithSignedReport(false));
             SoapCMSdetWithSignedReport.close();
             FileOutputStream SoapCMSdetHash = new FileOutputStream(path + "\\SOAP\\CMS (det.) hash.xml");
             SoapCMSdetHash.write(CMSdet.createVerifyCMSByHash(false));
             SoapCMSdetHash.close();
-            FileOutputStream SoapCMSdetHashWithReport = new FileOutputStream(path + "\\SOAP\\CMS (det.) hash WithReport.xml");
+            FileOutputStream SoapCMSdetHashWithReport = new FileOutputStream(path +
+                    "\\SOAP\\CMS (det.) hash WithReport.xml");
             SoapCMSdetHashWithReport.write(CMSdet.createVerifyCMSByHashWithReport(false));
             SoapCMSdetHashWithReport.close();
-            FileOutputStream SoapCMSdetHashWithSignedReport = new FileOutputStream(path + "\\SOAP\\CMS (det.) hash WithSignedReport.xml");
+            FileOutputStream SoapCMSdetHashWithSignedReport = new FileOutputStream(path
+                    + "\\SOAP\\CMS (det.) hash WithSignedReport.xml");
             SoapCMSdetHashWithSignedReport.write(CMSdet.createVerifyCMSByHashWithSignedReport(false));
             SoapCMSdetHashWithSignedReport.close();
 
@@ -287,11 +300,7 @@ public class SignatureController {
                     CAdESType.CAdES_BES, false));
             SoapCAdES_BES_WithSignedReport.close();
 
-//            FileOutputStream CAdES_BES_det = new FileOutputStream(path + "\\CAdES-BES (det.).sig");
-//            CAdES_BES_det.write(CAdESUtils.createCAdES(text, alias, password, null, true,
-//                    CAdESType.CAdES_BES));
-//            CAdES_BES_det.close();
-
+            // CAdES-T
             FileOutputStream FileCAdES_T = new FileOutputStream(path + "\\CAdES-T.sig");
             byte[] CAdES_T = CAdESUtils.createCAdES(text, alias, password, tsp, false, CAdESType.CAdES_T);
             FileCAdES_T.write(CAdES_T);
@@ -310,10 +319,7 @@ public class SignatureController {
                     CAdESType.CAdES_T, false));
             SoapCAdES_T_WithSignedReport.close();
 
-//            FileOutputStream CAdES_T_det = new FileOutputStream(path + "\\CAdES-T (det.).sig");
-//            CAdES_T_det.write(CAdESUtils.createCAdES(text, alias, password, tsp, true, CAdESType.CAdES_T));
-//            CAdES_T_det.close();
-
+            // CAdES-X
             FileOutputStream FileCAdES_X = new FileOutputStream(path + "\\CAdES-X Long Type 1.sig");
             byte[] CAdES_X = CAdESUtils.createCAdES(text, alias, password, tsp, false,
                     CAdESType.CAdES_X_Long_Type_1);
@@ -333,11 +339,6 @@ public class SignatureController {
             SoapCAdES_X_WithSignedReport.write(CAdESUtils.createVerifyCAdESWithSignedReport(CAdES_X,
                     CAdESType.CAdES_X_Long_Type_1, false));
             SoapCAdES_X_WithSignedReport.close();
-
-//            FileOutputStream CAdES_X_det = new FileOutputStream(path + "\\CAdES-X Long Type 1 (det.).sig");
-//            CAdES_X_det.write(CAdESUtils.createCAdES(text, alias, password, tsp, true,
-//                    CAdESType.CAdES_X_Long_Type_1));
-//            CAdES_X_det.close();
 
             // XML-DSig
             FileOutputStream FileXML_DSig = new FileOutputStream(path + "\\XML-DSig.xml");
@@ -432,6 +433,25 @@ public class SignatureController {
             SoapWSSWithSignedReport.write(WSSecurityUtils.createVerifyWSSSignatureWithSignedReport(WSS,
                     false));
             SoapWSSWithSignedReport.close();
+
+            // Штамп времени
+            FileOutputStream FileTimestamp = new FileOutputStream(path + "\\Timestamp.tsr");
+            byte[] Timestamp = TimeStampUtils.createTimeStamp(alias, tsp);
+            FileTimestamp.write(Timestamp);
+            FileTimestamp.close();
+            FileOutputStream SoapTimestamp = new FileOutputStream(path + "\\SOAP\\Timestamp.xml");
+            SoapTimestamp.write(TimeStampUtils.createVerifyTimeStamp(Timestamp, false));
+            SoapTimestamp.close();
+            FileOutputStream SoapTimestampWithReport = new FileOutputStream(path +
+                    "\\SOAP\\Timestamp WithReport.xml");
+            SoapTimestampWithReport.write(TimeStampUtils.createVerifyTimeStampWithReport(Timestamp,
+                    false));
+            SoapTimestampWithReport.close();
+            FileOutputStream SoapTimestampWithSignedReport = new FileOutputStream(path +
+                    "\\SOAP\\Timestamp WithSignedReport.xml");
+            SoapTimestampWithSignedReport.write(TimeStampUtils.createVerifyTimeStampWithSignedReport(Timestamp,
+                    false));
+            SoapTimestampWithSignedReport.close();
 
             return ResponseEntity.ok().body("Подписи сохранены в указанную папку");
         }

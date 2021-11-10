@@ -1,39 +1,24 @@
 package ru.voskhod.createSignature.utils;
 
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.security.*;
-import com.objsys.asn1j.runtime.*;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.bouncycastle.tsp.TimeStampResponse;
 import org.bouncycastle.util.encoders.Base64;
 import ru.CryptoPro.CAdES.CAdESType;
-import ru.CryptoPro.JCP.ASN.CryptographicMessageSyntax.*;
-import ru.CryptoPro.JCP.ASN.PKIX1Explicit88.CertificateSerialNumber;
-import ru.CryptoPro.JCP.ASN.PKIX1Explicit88.Name;
 import ru.CryptoPro.JCP.JCP;
-import ru.CryptoPro.JCP.params.OID;
 import ru.CryptoPro.JCP.tools.AlgorithmUtility;
-import ru.CryptoPro.reprov.x509.X509CertImpl;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 public class PAdESUtils {
 
+    //TODO: Сделать PAdES-X
     static String VerifyPAdES = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
             "xmlns:esv=\"http://esv.server.rt.ru\">\n" +
             "   <soapenv:Header/>\n" +
