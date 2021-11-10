@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -33,7 +34,7 @@ import java.util.logging.Logger;
  * @author Vakhtang Koroghlishvili
  * @author John Hewson
  */
-public class TSAClient {
+public class TSAClient implements com.itextpdf.text.pdf.security.TSAClient {
 
     private static final Logger LOG = Logger.getLogger(TSAClient.class.getName());
     private final String url;
@@ -65,13 +66,23 @@ public class TSAClient {
         return data;
     }
 
+    @Override
+    public int getTokenSizeEstimate() {
+        return 0;
+    }
+
+    @Override
+    public MessageDigest getMessageDigest() throws GeneralSecurityException {
+        return this.digest;
+    }
+
     /**
      * @param messageImprint imprint of message contents
      * @return the encoded time stamp token
      * @throws IOException if there was an error with the connection or data from the TSA server,
      *                     or if the time stamp response could not be validated
      */
-    public TimeStampToken getTimeStampToken(byte[] messageImprint) throws IOException {
+    public byte[] getTimeStampToken(byte[] messageImprint) throws IOException {
         digest.reset();
         byte[] hash = digest.digest(messageImprint);
 
@@ -101,7 +112,7 @@ public class TSAClient {
             throw new IOException("Response does not have a time stamp token");
         }
 
-        return token;
+        return token.getEncoded();
     }
 
     public TimeStampToken getTimeStampTokenFromHash(byte[] hash) throws IOException {

@@ -56,6 +56,7 @@ public class XMLUtils {
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
 
+    // TODO не работает со Strong подписями
     public static byte[] createXMLDSig(byte[] data, String alias, String password) throws Exception {
         KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
         hdImageStore.load(null, null);

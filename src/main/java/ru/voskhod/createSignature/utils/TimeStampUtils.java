@@ -1,6 +1,5 @@
 package ru.voskhod.createSignature.utils;
 
-import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.util.encoders.Base64;
 import ru.CryptoPro.JCP.JCP;
 import ru.CryptoPro.JCP.tools.AlgorithmUtility;
@@ -11,7 +10,6 @@ import java.security.MessageDigest;
 import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 
 public class TimeStampUtils {
@@ -63,8 +61,7 @@ public class TimeStampUtils {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String data = dateFormat.format(new Date());
         digest.digest(TSAClient.hexStringToByteArray(dateFormat.format(new Date())));
-        TimeStampToken token = tsaClient.getTimeStampToken(data.getBytes(StandardCharsets.UTF_8));
-        return token.getEncoded();
+        return tsaClient.getTimeStampToken(data.getBytes(StandardCharsets.UTF_8));
     }
 
     public static byte[] createVerifyTimeStamp(byte[] stamp, boolean verifySignatureOnly) throws Exception {

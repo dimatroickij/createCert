@@ -63,6 +63,7 @@ public class XAdESUtils {
             "   </soapenv:Body>\n" +
             "</soapenv:Envelope>";
 
+    // TODO не работает со Strong подписями
     public static byte[] createXAdES(byte[] data, String alias, String password, String tsp, String ref_acct,
                                      Integer TypeXAdES) throws Exception {
         KeyStore hdImageStore = KeyStore.getInstance(JCP.HD_STORE_NAME, JCP.PROVIDER_NAME);
