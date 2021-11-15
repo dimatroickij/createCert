@@ -434,24 +434,24 @@ public class SignatureController {
                     false));
             SoapWSSWithSignedReport.close();
 
-            // Штамп времени
-            FileOutputStream FileTimestamp = new FileOutputStream(path + "\\Timestamp.tsr");
-            byte[] Timestamp = TimeStampUtils.createTimeStamp(alias, tsp);
-            FileTimestamp.write(Timestamp);
-            FileTimestamp.close();
-            FileOutputStream SoapTimestamp = new FileOutputStream(path + "\\SOAP\\Timestamp.xml");
-            SoapTimestamp.write(TimeStampUtils.createVerifyTimeStamp(Timestamp, false));
-            SoapTimestamp.close();
-            FileOutputStream SoapTimestampWithReport = new FileOutputStream(path +
-                    "\\SOAP\\Timestamp WithReport.xml");
-            SoapTimestampWithReport.write(TimeStampUtils.createVerifyTimeStampWithReport(Timestamp,
-                    false));
-            SoapTimestampWithReport.close();
-            FileOutputStream SoapTimestampWithSignedReport = new FileOutputStream(path +
-                    "\\SOAP\\Timestamp WithSignedReport.xml");
-            SoapTimestampWithSignedReport.write(TimeStampUtils.createVerifyTimeStampWithSignedReport(Timestamp,
-                    false));
-            SoapTimestampWithSignedReport.close();
+//            // Штамп времени
+//            FileOutputStream FileTimestamp = new FileOutputStream(path + "\\Timestamp.tsr");
+//            byte[] Timestamp = TimeStampUtils.createTimeStamp(alias, tsp);
+//            FileTimestamp.write(Timestamp);
+//            FileTimestamp.close();
+//            FileOutputStream SoapTimestamp = new FileOutputStream(path + "\\SOAP\\Timestamp.xml");
+//            SoapTimestamp.write(TimeStampUtils.createVerifyTimeStamp(Timestamp, false));
+//            SoapTimestamp.close();
+//            FileOutputStream SoapTimestampWithReport = new FileOutputStream(path +
+//                    "\\SOAP\\Timestamp WithReport.xml");
+//            SoapTimestampWithReport.write(TimeStampUtils.createVerifyTimeStampWithReport(Timestamp,
+//                    false));
+//            SoapTimestampWithReport.close();
+//            FileOutputStream SoapTimestampWithSignedReport = new FileOutputStream(path +
+//                    "\\SOAP\\Timestamp WithSignedReport.xml");
+//            SoapTimestampWithSignedReport.write(TimeStampUtils.createVerifyTimeStampWithSignedReport(Timestamp,
+//                    false));
+//            SoapTimestampWithSignedReport.close();
 
             return ResponseEntity.ok().body("Подписи сохранены в указанную папку");
         }

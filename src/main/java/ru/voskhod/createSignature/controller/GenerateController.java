@@ -136,7 +136,7 @@ public class GenerateController {
                     SoapXAdES.write(XAdESUtils.createVerifyXAdES(XAdES, XAdESType.XAdES_T, false));
                     SoapXAdES.close();
                     FileOutputStream SoapXAdES_WithSignedReport = new FileOutputStream(path +
-                            "\\VerifyXAdES_WithSignedReport_" + i + ".xml");
+                            "\\VerifyXAdES_withSignedReport_" + i + ".xml");
                     SoapXAdES_WithSignedReport.write(XAdESUtils.createVerifyXAdESWithSignedReport(XAdES,
                             XAdESType.XAdES_T, false));
                     SoapXAdES_WithSignedReport.close();
@@ -160,7 +160,7 @@ public class GenerateController {
                     SoapPAdES.write(PAdESUtils.createVerifyPAdES(PAdES, false));
                     SoapPAdES.close();
                     FileOutputStream SoapPAdES_WithSignedReport = new FileOutputStream(path +
-                            "\\VerifyPAdES_WithSignedReport_" + i + ".xml");
+                            "\\VerifyPAdES_withSignedReport_" + i + ".xml");
                     SoapPAdES_WithSignedReport.write(PAdESUtils.createVerifyPAdESWithSignedReport(PAdES,
                             false));
                     SoapPAdES_WithSignedReport.close();
@@ -174,7 +174,7 @@ public class GenerateController {
                     SoapTimestamp.write(TimeStampUtils.createVerifyTimeStamp(timestamp, false));
                     SoapTimestamp.close();
                     FileOutputStream SoapTimestamp_WithSignedReport = new FileOutputStream(path +
-                            "\\VerifyTimeStamp_WithSignedReport_" + i + ".xml");
+                            "\\VerifyTimeStamp_withSignedReport_" + i + ".xml");
                     SoapTimestamp_WithSignedReport.write(TimeStampUtils.createVerifyTimeStampWithSignedReport(timestamp,
                             false));
                     SoapTimestamp_WithSignedReport.close();
